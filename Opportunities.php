@@ -2,7 +2,6 @@
 class Opportunity
 {
 
-   private $languages = array('English', 'French', 'Tamil');
    private $custom_type = 'av_opportunity';
    
    public function __construct()
@@ -26,19 +25,10 @@ class Opportunity
        // Hook into the 'init' action
        add_action( 'init', array($this,'savi_opportunity_categories'), 0 );
  
-       // Add the scripts of the Listing plugin (taken from Explorable Themes)
-       add_action( 'admin_enqueue_scripts', array($this,'enqueue_scripts_css') );
+      
     }
 
-    function enqueue_scripts_css() {
-        $plugin_dir = plugins_url('', __FILE__ );
-            
-         wp_enqueue_style( 'style-name', $plugin_dir .'/css/bootstrap.css', array(), "1.00");        
-         wp_enqueue_style( 'style-name-1', $plugin_dir .'/css/bootstrap-combobox.css', array(), "1.00");        
-         // wp_enqueue_script( 'script-name-1', 'http://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js', array('jquery'), '1.9.1', false );
-         wp_enqueue_script( 'script-name-2', $plugin_dir .'/js/bootstrap.js', array('jquery'), '1.0.0', false );
-         wp_enqueue_script( 'script-name-3', $plugin_dir .'/js/bootstrap-combobox.js', array('jquery'), '1.0.0', false );    
-    }
+    
 
     
     // Create a Custom Post Type
@@ -246,7 +236,7 @@ function savi_opportunity_categories()  {
 			// Required for the dynamic dropdown
 			$plugin_dir = plugins_url('', __FILE__ );
           $dir =  get_bloginfo('url') . '/wp-content/plugins';   
-            wp_enqueue_style( 'style-name', $plugin_dir .'/css/bootstrap.css', array(), "1.00");        
+            //wp_enqueue_style( 'style-name', $plugin_dir .'/css/bootstrap.css', array(), "1.00");        
             wp_enqueue_style( 'style-name-1', $plugin_dir .'/css/bootstrap-combobox.css', array(), "1.00");
             wp_enqueue_style( 'style-name-3', $dir .'/meta-box/css/select.css', array(), "4.33");        
             wp_enqueue_style( 'style-name-4', $dir .'/meta-box/css/style.css', array(), "4.33");        
@@ -268,10 +258,10 @@ function savi_opportunity_categories()  {
         echo "<div class='disp-row rwmb-textarea-wrapper'>";
             // Field Definition for Comments
                 echo " <div class='rwmb-label'>";
-                    echo "<label for='comments'>Revisions</label>\n";
+                    echo "<label for='revisions'>Revisions</label>\n";
                 echo " </div>"; 
                 echo "<div class='rwmb-input'>\n";
-                    echo "<textarea rows='4' cols='50' name='comments' class='rwmb-textarea large-text'>$revisions</textarea>";
+                    echo "<textarea rows='4' cols='50' name='revisions' class='rwmb-textarea large-text'>$revisions</textarea>";
                 echo "</div>";
             echo "</div>";
 
@@ -312,38 +302,40 @@ function savi_opportunity_categories()  {
 	
 
         //$opptun_title = sanitize_text_field( $_POST['opportunity_title'] );
-        $av_units = sanitize_text_field( $_POST['av_unit'] );
-        $unit_project = sanitize_text_field( $_POST['projectname'] );
-        $contact_name = sanitize_text_field( $_POST['contactPerson'] );
-        $contact_email = sanitize_text_field( $_POST['email'] );
-        $contact_number = sanitize_text_field( $_POST['phone'] );
+        $av_units = $_POST['av_unit'];
+        $unit_project = $_POST['projectname'];
+        $contact_name = $_POST['contactPerson'];
+        $contact_email = sanitize_text_field( $_POST['contactEmail'] );
+        $contact_phone = sanitize_text_field( $_POST['contactPhone'] );
        
-        $comments = sanitize_text_field( $_POST['comments'] );
+        $revisions = sanitize_text_field( $_POST['revisions'] );
         $startdate = sanitize_text_field( $_POST['startdate']);
         $enddate = sanitize_text_field( $_POST['enddate']);
         $duration = sanitize_text_field( $_POST['duration']);  
-      
+        $number_of_volunteers = sanitize_text_field( $_POST['number_of_volunteers']);
         $computer_required = sanitize_text_field( $_POST['computerrequired']);
         $timing = sanitize_text_field( $_POST['timing']);
         $morning_timings = sanitize_text_field( $_POST['morningtimings']);
         $afternoon_timings = sanitize_text_field( $_POST['afternoontimings']);
-       
+
         update_post_meta( $post_id, 'av_unit', $av_units);
         update_post_meta( $post_id, 'projectname', $unit_project);
         update_post_meta( $post_id, 'contactPerson', $contact_name);
-        update_post_meta( $post_id, 'email', $contact_email);
-        update_post_meta( $post_id, 'phone', $contact_number);
+        update_post_meta( $post_id, 'contactEmail', $contact_email);
+        update_post_meta( $post_id, 'contactPhone', $contact_phone);
        
-        update_post_meta( $post_id, 'comments', $comments);
+        update_post_meta( $post_id, 'revisions', $revisions);
         update_post_meta( $post_id, 'startdate', $startdate);
         update_post_meta( $post_id, 'enddate', $enddate);
         update_post_meta( $post_id, 'duration', $duration);
+        update_post_meta( $post_id, 'number_of_volunteers', $number_of_volunteers);
+        update_post_meta( $post_id, 'architect_semester', $architect_semester);
        
         update_post_meta( $post_id, 'computerrequired', $computer_required);
         update_post_meta( $post_id, 'timing', $timing);
         update_post_meta( $post_id, 'morningtimings', $morning_timings);
         update_post_meta( $post_id, 'afternoontimings', $afternoon_timings);
-          
+
     }   
 
     public function opportunity_metabox($post) {
@@ -356,19 +348,21 @@ function savi_opportunity_categories()  {
             $saved_AVUnit = $postmetaArray['av_unit'][0];
             $saved_projname = $postmetaArray['projectname'][0];
             $saved_contactPerson = $postmetaArray['contactPerson'][0];
-            $saved_email = $postmetaArray['email'][0];
-            $saved_phone = $postmetaArray['phone'][0];
+            $saved_email = $postmetaArray['contactEmail'][0];
+            $saved_phone = $postmetaArray['contactPhone'][0];
             //$saved_language= unserialize($postmetaArray['language'][0]);
-            $saved_comments = $postmetaArray['comments'][0];
+            $saved_comments = $postmetaArray['revisions'][0];
             $saved_startdate = $postmetaArray['startdate'][0];
             $saved_enddate = $postmetaArray['enddate'][0];
-            $saved_duration = $postmetaArray['duration'][0];  
-            //$saved_otherlanguage  = $postmetaArray['otherlanguage'][0];
+            $saved_duration = $postmetaArray['duration'][0];
+            $saved_number_of_volunteers = $postmetaArray['number_of_volunteers'][0];    
+            $saved_architect_semester  = $postmetaArray['architect_semester'][0];
             $computer_required = $postmetaArray['computerrequired'][0];
             $timing = $postmetaArray['timing'][0];
             $morning_timings = $postmetaArray['morningtimings'][0];
-            $afternoon_timings = $postmetaArray['afternoontimings'][0];  
-           
+            $afternoon_timings = $postmetaArray['afternoontimings'][0]; 
+            $saved_architect_semester = $postmetaArray['architect_semester'][0];  
+            
                 
         } else {
 
@@ -387,6 +381,7 @@ function savi_opportunity_categories()  {
             $timing = '';
             $morning_timings = '';
             $afternoon_timings = '';
+            $saved_architect_semester = '';
         }
 
         $AVUnitQuery = new WP_Query( array(
@@ -399,15 +394,15 @@ function savi_opportunity_categories()  {
 
         // Start constructing the Select options for AV Units
         $unitSelectHTML = "<select class='combobox' name='av_unit' id='av_unit' onchange='unitChanged()' name='inline'> \n<option></option>\n";
-        
+
         if ($AVUnitQuery->found_posts > 0) {
             while ($AVUnitQuery->have_posts()) {
                 $AVUnitQuery->the_post();
                 $unitname = get_the_title();
                 $firstrow = true;
-                $temp = str_replace(" ","",$unitname);
+
                 // Construct the options for the select for AV Unit
-                $unitSelectHTML .= "<option value='$temp'";
+                $unitSelectHTML .= "<option value='$unitname'";
                 
                 // If the exisitng value of the AV Unit is equal to the current loop value then select the option
                 if ($unitname == $saved_AVUnit)
@@ -418,8 +413,6 @@ function savi_opportunity_categories()  {
             }
         }
         $unitSelectHTML .= "</Select>";
-        echo "<!-- $unitSelectHTML -->";
-        
         wp_reset_query();
         
         // Now we start on the Projects - The confusing mama ....
@@ -442,8 +435,6 @@ function savi_opportunity_categories()  {
                 if (sizeof($allParentUnits) > 0) {
                     foreach($allParentUnits as $key=>$parentUnits) {
                         $unitProjectArray[] = new unitProject($parentUnits['parent_unit'], $projname);
-                         
-                         
                     }
                 
                 }
@@ -454,25 +445,22 @@ function savi_opportunity_categories()  {
         // Get the Object Array sorted on UnitName
         //usort($unitProjectArray, 'psort');
         
+        
         foreach ($unitProjectArray as $key => $row) {
           $unit[$key]  = $row->unit;
           $project[$key] = $row->project;
         }
         array_multisort($unit, SORT_ASC, $project, SORT_ASC, $unitProjectArray);
-        
-        echo "<script>console.log('";
-        print_r($unitProjectArray);
-        echo "Hello there";
-        echo "');</script>";
-        
+
         // Start Constructing the select options for all projects (to be used as the template when the user select any AV Unit
         $projhiddenSelectHTML = "<select style='display:none;' id='projectname_all'>\n";
-        $projSelectHTML = "<select class='combobox' id='projname' name='inline'> \n<option></option>\n";
+        $projSelectHTML = "<select class='combobox' id='projectname' name='projectname'> \n<option></option>\n";
         $pr_avUnitName = "";
-        $firstrow = false;
-            
+
         for ($arrayIndex=0;$arrayIndex < sizeof($unitProjectArray);$arrayIndex++) {
             $avUnitName = $unitProjectArray[$arrayIndex]->unit;
+            $tmpUnit = str_replace(" ", "_", $avUnitName);
+
             $projname = $unitProjectArray[$arrayIndex]->project;
             if ($avUnitName == $saved_AVUnit) {
                 $projSelectHTML .= "<option value='$projname'";
@@ -480,7 +468,7 @@ function savi_opportunity_categories()  {
                     $projSelectHTML .= "selected";
                 }
                 // End the construct of the option
-                $projSelectHTML .= ">$tmpprojname</option>\n";
+                $projSelectHTML .= ">$projname</option>\n";
             }
           
                        
@@ -488,8 +476,9 @@ function savi_opportunity_categories()  {
                 if (!firstrow) {
                     $projhiddenSelectHTML .= "</optgroup>\n";
                 }
-               $temp = str_replace(" ","",$avUnitName);
-                $projhiddenSelectHTML .= "<optgroup id='optgroup{$temp}'>";
+
+                $projhiddenSelectHTML .= "<optgroup id='optgroup{$tmpUnit}'>";
+                $projhiddenSelectHTML .= "<option value='General'>General</option>\n";
                 $pr_avUnitName = $avUnitName;    
             }
             
@@ -501,8 +490,16 @@ function savi_opportunity_categories()  {
         wp_reset_query();
 
         // Start constructing the select options for Projects (within a particular AV Unit)
-        $projSelectHTML = "<select name='projectname' id='projectname'></select>\n";
-        
+
+        if ($saved_projname != "") {
+            $projSelectHTML .= "<option value='General' ";
+            if ($saved_projname == 'General') {
+                $projSelectHTML .= "Selected";
+            }
+            $projSelectHTML .= ">General</option>\n";
+        }
+        $projSelectHTML .= "</select>\n";
+
         
         ?>
         <style>
@@ -526,9 +523,10 @@ function savi_opportunity_categories()  {
         }
         
         </style>
+        
+
         <?php 
-     
-            
+
         // Field definition for AV Units
         echo "<div class='disp-row'>";
           echo " <div class='rwmb-label'>"; 
@@ -566,20 +564,20 @@ function savi_opportunity_categories()  {
         // Field Definition for Title
         echo "<div class='disp-row'>";
              echo " <div class='rwmb-label'>";           
-                echo "<label for='email'>Contact Email</label>\n";
+                echo "<label for='contactEmail'>Contact Email</label>\n";
              echo " </div>";         
             echo "<div class='input'>\n";
-                echo "<input type='text' name='email' value='$saved_email' />\n";
+                echo "<input type='text' name='contactEmail' value='$saved_email' />\n";
             echo "</div>";
         echo "</div>";
         
         // Field Definition for Phone
         echo "<div class='disp-row'>";
             echo " <div class='rwmb-label'>";   
-                echo "<label for='phone'>Contact Phone</label>\n";
+                echo "<label for='contactPhone'>Contact Phone</label>\n";
             echo " </div>";    
             echo "<div class='input'>\n";
-                echo "<input type='text' name='phone' value='$saved_phone' />\n";
+                echo "<input type='text' name='contactPhone' value='$saved_phone' />\n";
             echo "</div>";
         echo "</div>";
  
@@ -613,7 +611,25 @@ function savi_opportunity_categories()  {
             echo "</div>";
         echo "</div>";
         
-         
+          // Field Definition for Number of Volunteers
+        echo "<div class='disp-row'>";
+           echo " <div class='rwmb-label'>";
+                echo "<label for='Number of Volunteers'>Number of Volunteers</label>\n";
+           echo " </div>";     
+            echo "<div class='input'>\n";
+                echo "<input type='number' name='number_of_volunteers' value='".$saved_number_of_volunteers."'/>\n";
+            echo "</div>";
+        echo "</div>";
+
+       // Field Definition for Architect Semester
+        echo "<div class='disp-row'>";
+           echo " <div class='rwmb-label'>";
+                echo "<label for='Architect Semester'>Architect Semester</label>\n";
+           echo " </div>";     
+            echo "<div class='input'>\n";
+                echo "<input type='number' name='architect_semester' value='".$saved_architect_semester."'/>\n";
+            echo "</div>";
+        echo "</div>";
         
         echo "<div class='disp-row'>";
            echo " <div class='rwmb-label'>";
@@ -624,6 +640,7 @@ function savi_opportunity_categories()  {
            $cmreq_yes=($computer_required == "YES")?"selected='selected'":""; 
            $tm_ft=($timing == "FT")?"selected='selected'":"";
            $tm_ht=($timing == "HT")?"selected='selected'":"";
+           $tm_either=($timing == "EITHER")?"selected='selected'":"";
          ?>
          
            <select size="0" id="computerrequired" name="computerrequired" class="rwmb-select">
@@ -647,6 +664,7 @@ function savi_opportunity_categories()  {
              <option value="" <?php if($tm_ft =="" && $tm_ht ==""): ?>selected="selected" <?php endif; ?> >Select a Timing</option>
              <option value="FT" <?php echo $tm_ft;?>>FT</option>
              <option value="HT" <?php echo $tm_ht;?>>HT</option>
+             <option value="EITHER"  <?php echo $tm_either;?> >EITHER</option>        
            </select>         
          
          <?php       
@@ -672,66 +690,34 @@ function savi_opportunity_categories()  {
                     echo "<textarea rows='4' cols='50' name='afternoontimings' class='rwmb-textarea large-text'>$afternoon_timings</textarea>";
                 echo "</div>";
             echo "</div>"; 
-        
-                 
-       
-       
-        // Field Definition for Language
-/*             echo "<div class='disp-row'>";
-            echo "<label for='language'>Language</label>\n";
-
-       echo "<div class='input'>\n";
-            $checked_value1 = "";
-            $checked_value2 = "";
-            $checked_value3 = "";         
-            if (sizeof($language) > 0) {
-                for($i=0;$i<=count($language);$i++) {   
-                    if( $language[$i] == "value1" ){$checked_value1 = "checked ='checked'";}                 
-                    if( $language[$i] == "value2" ){$checked_value2 = "checked ='checked'";} 
-                    if( $language[$i] == "value3" ){$checked_value3 = "checked ='checked'";}  
-                    
-                }  
-            }   
-            echo "<label>";
-            echo '<input type="checkbox" value="value1" name="language[]" class="rwmb-checkbox-list"'.$checked_value1.'> English';
-            echo "</label><br>";
-            echo "<label>";
-            echo '<input type="checkbox" value="value2" name="language[]" class="rwmb-checkbox-list"'.$checked_value2.'> French';
-            echo "</label><br>";
-            echo "<label>";
-            echo '<input type="checkbox" value="value3" name="language[]" class="rwmb-checkbox-list"'.$checked_value3.'> Tamil';
-            echo "</label><br>";
-            echo "<label>";
-
-            echo '<input type="text" value="'.$otherlanguage.'" name="otherlanguage" class="rwmb-other-language"> Others';
-            echo "</label>";  
-            echo "</div>";
-            echo "</div>";
- */           
-        
-           
-        
+ 
         ?>
         
             <script>
+            
             jQuery(document).ready(function(){
                 jQuery('.combobox').combobox();
+                jQuery('#av_unit').combobox('selectByText', '<?php echo $saved_AVUnit; ?>');
+                jQuery("#projname").combobox('selectByText', '<?php echo $saved_projname ?>');
             });
         
             function unitChanged() {
                 // this is called when AV Unit is changed. 
                 $unitname = jQuery("#av_unit").val();
-
                 // Remove the current set of options in the Project Select
                 jQuery("#projectname options").remove();
                 if ($unitname != '') {
+                    // 
                     // Get the options from the hidden project selects which pertains to the current AV Unit
+                    $unitname = $unitname.replace(" ", "_");
                     $newselect = jQuery("#optgroup"+$unitname).html();
                 } else {
                     $newselect = "<option value=''> </option>";
                 }
+
                 // Assign the new set of options pertaining to the current AV Unit
                 jQuery("#projectname").html($newselect);
+                jQuery('#projectname').data('combobox').refresh();
 
             }
             </script>

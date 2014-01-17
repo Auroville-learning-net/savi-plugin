@@ -8,9 +8,7 @@ class AV_projects extends Listing
         // Create a new Post Type
         add_action( 'init', array($this, 'create_post_type' ));
         
-        // Add the scripts of the Listing plugin (taken from Explorable Themes)
-        add_action( 'admin_enqueue_scripts', array($this,'enqueue_scripts_css') );
-        
+            
       // Call the Units_Metabox when showing the post
         add_action( 'add_meta_boxes', array($this, 'init_av_projects_metabox' ));
  

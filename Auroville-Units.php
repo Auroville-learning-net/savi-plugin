@@ -17,8 +17,6 @@ class AV_units extends Listing
         // Call the Units_Metabox when showing the post
         add_action( 'add_meta_boxes', array($this, 'init_av_units_metabox' ));
 
-        
-        
         // Call the Save Post when av_unit is being saved
         add_action( 'save_post', array($this, 'save_postdata' ));
 
