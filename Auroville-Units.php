@@ -33,10 +33,10 @@ class AV_units extends Listing
                     'name' => __( 'Av Units' ),
                     'singular_name' => __( 'Av Unit' )
                 ),
-                'supports' => array( 'title', 'editor', 'thumbnail', 'excerpt', 'comments','revisions'  ),
+                'supports' => array( 'title', 'editor', 'thumbnail'  ),
                 'public' => true,
                 'has_archive' => true,
-                'rewrite' => array('slug' => 'av_units'),
+                'rewrite' => array('slug' => 'av_unit'),
             )
         );
    //  register_taxonomy_for_object_type( 'category', 'posts' );
@@ -263,7 +263,21 @@ class AV_units extends Listing
                         'cols' => 20,
                         'rows' => 3,
                     ),
-                    
+                     array(
+                        'name' => __( 'Excerpt', 'rwmb' ),
+                        'desc' => __( 'Excerpt', 'rwmb' ),
+                        'id'   => "excerpt",
+                        'type' => 'textarea',
+                        'cols' => 20,
+                        'rows' => 3,
+                        // Editor settings, see wp_editor() function: look4wp.com/wp_editor
+			'options' => array(
+				'textarea_rows' => 4,
+				'teeny'         => true,
+				'media_buttons' => false,
+			),
+                    ),
+                           
                     // Editor settings, see wp_editor() function: look4wp.com/wp_editor
                 'options' => array(
                                 'textarea_rows' => 4,
@@ -280,6 +294,8 @@ class AV_units extends Listing
             new RW_Meta_Box( $meta_box );
         }
     }
+     
+  
     
     // Saving the meta data when saving the post
     public function save_postdata( $post_id ) {
@@ -320,7 +336,7 @@ class AV_units extends Listing
         $link_with_units = $_POST['link_with_units'];
         $affiliation_note = $_POST['affiliation_note'];
         $revision_note = $_POST['revision_note'];
-        
+        $excerpt = $_POST['excerpt'];
         // Update the meta field in the database.
 
         update_post_meta( $post_id, 'unit_name', $unit_name);
@@ -331,7 +347,7 @@ class AV_units extends Listing
         update_post_meta( $post_id, 'link_with_units', $link_with_units);
         update_post_meta( $post_id, 'affiliation_note', $affiliation_note);
         update_post_meta( $post_id, 'revision_note', $revision_note);
- 
+        update_post_meta( $post_id, 'excerpt', $excerpt);
         $this->update_listing_fields($post_id);
 
 
