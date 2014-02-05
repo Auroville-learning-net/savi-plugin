@@ -692,15 +692,17 @@ function savi_opportunity_categories()  {
             echo "<div class='input'>\n";
            $cmreq_no=($computer_required == "NO")?"selected='selected'":"";
            $cmreq_yes=($computer_required == "YES")?"selected='selected'":"";
+           $cmreq_welcome=($computer_required == "WELCOME")?"selected='selected'":"";
            $tm_ft=($timing == "FT")?"selected='selected'":"";
            $tm_ht=($timing == "HT")?"selected='selected'":"";
            $tm_either=($timing == "EITHER")?"selected='selected'":"";
          ?>
 
            <select size="0" id="computerrequired" name="computerrequired" class="rwmb-select">
-             <option value="" <?php if($cmreq_no =="" && $cmreq_yes ==""): ?> selected="selected" <?php endif; ?> >Select a Computer Required</option>
+             <option value="" <?php if($cmreq_no =="" && $cmreq_yes =="" && $cmreq_welcome ==""): ?> selected="selected" <?php endif; ?> >Select a Computer Required</option>
              <option value="NO"  <?php echo $cmreq_no;?> >NO</option>
              <option value="YES" <?php echo $cmreq_yes;?>>YES</option>
+             <option value="WELCOME" <?php echo $cmreq_welcome;?>>WELCOME</option> 
            </select>
 
          <?php
@@ -750,9 +752,9 @@ function savi_opportunity_categories()  {
             <script>
 
             jQuery(document).ready(function(){
-                jQuery('.combobox').combobox();
-                jQuery('#av_unit').combobox('selectByText', '<?php echo $saved_AVUnit; ?>');
-                jQuery("#projname").combobox('selectByText', '<?php echo $saved_projname ?>');
+               // jQuery('.combobox').combobox();
+               // jQuery('#av_unit').combobox('selectByText', '<?php echo $saved_AVUnit; ?>');
+               // jQuery("#projname").combobox('selectByText', '<?php echo $saved_projname ?>');
             });
 
             function unitChanged() {
