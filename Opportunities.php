@@ -51,7 +51,7 @@ class Opportunity
    // Register Custom Taxonomy
 public function savi_opportunity_taxonomy()  {
 
-	$labels = array(
+	/*$labels = array(
 		'name'                       => _x( 'Skills', 'Taxonomy General Name', 'text_domain' ),
 		'singular_name'              => _x( 'Skill', 'Taxonomy Singular Name', 'text_domain' ),
 		'menu_name'                  => __( 'Skills', 'text_domain' ),
@@ -76,6 +76,7 @@ public function savi_opportunity_taxonomy()  {
 		'show_in_nav_menus'          => true,
 		'show_tagcloud'              => true,
 	);
+	*/
 	$labels_soft = array(
 		'name'                       => _x( 'Softwares', 'Taxonomy General Name', 'text_domain' ),
 		'singular_name'              => _x( 'Software', 'Taxonomy Singular Name', 'text_domain' ),
@@ -128,7 +129,7 @@ public function savi_opportunity_taxonomy()  {
 	);
 
 
-	register_taxonomy( 'savi_opp_tag_skills', $this->custom_type, $args );
+	//register_taxonomy( 'savi_opp_tag_skills', $this->custom_type, $args );
 	register_taxonomy( 'savi_opp_tag_soft', $this->custom_type, $args_soft );
     register_taxonomy( 'savi_opp_tag_languages', $this->custom_type, $args_languages );
 
@@ -444,24 +445,25 @@ function savi_opportunity_categories()  {
             while ($AVUnitQuery->have_posts()) {
                 $AVUnitQuery->the_post();
                 $unitname = get_the_title();
+				$unitID = get_the_ID();
                 $firstrow = true;
 
                 // Construct the options for the select for AV Unit
-                $unitSelectHTML .= "<option value='$unitname'";
+                $unitSelectHTML .= "<option value='$unitID'";
 
                 // If the exisitng value of the AV Unit is equal to the current loop value then select the option
-                if ($unitname == $saved_AVUnit)
+                if ($unitID == $saved_AVUnit  ||  $unitname == $saved_AVUnit)
                     $unitSelectHTML .= "selected";
 
                 // End the Construct for the option
                 $unitSelectHTML .= ">$unitname</option>\n";
-                $unitProjectArray[] = new unitProject($unitname, "General");
+                $unitProjectArray[] = new unitProject($unitID, 0);
             }
 
         }
         $unitSelectHTML .= "</Select>";
         wp_reset_query();
-
+       // echo"<pre>",print_r($unitProjectArray),"</pre>".sizeof( $AVUnitQuery);
         // Now we start on the Projects - The confusing mama ....
         $AVProjectQuery = new WP_Query( array(
                     'post_type' => 'av_project',
@@ -481,7 +483,7 @@ function savi_opportunity_categories()  {
                 $allParentUnits = $parentUnitsMeta[0];
                 if (sizeof($allParentUnits) > 0) {
                     foreach($allParentUnits as $key=>$parentUnits) {
-                        $unitProjectArray[] = new unitProject($parentUnits['parent_unit'], $projname);
+                        $unitProjectArray[] = new unitProject($parentUnits['parent_unit'], $postID);
                     }
 
                 }
@@ -512,11 +514,11 @@ function savi_opportunity_categories()  {
         for ($arrayIndex=0;$arrayIndex < sizeof($unitProjectArray);$arrayIndex++) {
             $avUnitName = $unitProjectArray[$arrayIndex]->unit;
             $tmpUnit = str_replace(" ", "_", $avUnitName);
-
-            $projname = $unitProjectArray[$arrayIndex]->project;
+            $projID   = $unitProjectArray[$arrayIndex]->project; 
+            $projname = ($unitProjectArray[$arrayIndex]->project) == 0?"General":get_post($unitProjectArray[$arrayIndex]->project)->post_title;
             if ($avUnitName == $saved_AVUnit) {
-                $projSelectHTML .= "<option value='$projname'";
-                if ($projname == $saved_projname) {
+                $projSelectHTML .= "<option value='$projID'";
+                if ($projID == $saved_projname) {
                     $projSelectHTML .= "selected";
                 }
                 // End the construct of the option
@@ -534,7 +536,7 @@ function savi_opportunity_categories()  {
                 $pr_avUnitName = $avUnitName;
             }
 
-            $projhiddenSelectHTML .= "<option value='$projname'>$projname</option>\n";
+            $projhiddenSelectHTML .= "<option value='$projID'>$projname</option>\n";
         }
 
         $projhiddenSelectHTML .= "</select>";

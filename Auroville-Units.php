@@ -44,7 +44,7 @@ class AV_units extends Listing
     
     function savi_units_categories()  {
 
-	$labels = array(
+	/*$labels = array(
 		'name'                       => _x( 'Guest House Categories', 'Taxonomy General Name', 'text_domain' ),
 		'singular_name'              => _x( 'Guest House Category', 'Taxonomy Singular Name', 'text_domain' ),
 		'menu_name'                  => __( 'Guest House Categories', 'text_domain' ),
@@ -94,7 +94,7 @@ class AV_units extends Listing
 		'show_in_nav_menus'          => true,
 		'show_tagcloud'              => true,
 	);
-	
+	*/
 	//register_taxonomy( 'savi_unit', 'av_unit', $args_units );
 	
     $labels_unit_status = array(

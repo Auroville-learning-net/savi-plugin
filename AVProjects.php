@@ -331,7 +331,8 @@ add_meta_box( 'unit_Project_Information', "Project Information", array($this,'av
             while ( $avUnitQuery->have_posts() ) {
                 $avUnitQuery->the_post();
                 $avUnitName = get_the_title();
-                $avOptions .= "<option value='$avUnitName'>$avUnitName</option>\n";
+                $avUnitID = get_the_ID();
+                $avOptions .= "<option value='$avUnitName' title='$avUnitID'>$avUnitName</option>\n";
 
             }
         }
@@ -352,8 +353,11 @@ add_meta_box( 'unit_Project_Information', "Project Information", array($this,'av
         if (sizeof($allParentUnits) > 0) {
             foreach($allParentUnits as $key=>$parentUnits) {
             
+                $unit_post  = get_post($parentUnits['parent_unit']);
+                $title      = $unit_post->post_title; 
                 echo "<div class='repeat-fields'>\n";
-                echo "<input class='parent_units' name='parent_unit[]' enabled=false type='text' style='vertical-align:top;' value='".$parentUnits['parent_unit']."'>\n";
+                echo "<input class='parent_units' name='parent_unit[]' enabled=false type='text' style='vertical-align:top;' value='".$title."'>\n";
+                echo "<input class='parent_units' name='parent_unit_hidden[]' enabled=false type='hidden' style='vertical-align:top;' value='".$parentUnits['parent_unit']."'>\n";
                 echo "<input type='button' value='Unselect this Unit' onclick='removethis(".$key.")'>";
                 echo "</div>";
              
@@ -378,6 +382,7 @@ add_meta_box( 'unit_Project_Information', "Project Information", array($this,'av
                 size = jQuery(".repeat-fields").size();
                 
                 selectedUnit = jQuery("select#unitComboBox option").filter(":selected").text();
+                selectedUnit_hidden = jQuery("select#unitComboBox option").filter(":selected").attr("title");   
                 unitIsPresent = false;
                 jQuery("input.parent_units").each(function(i) { 
                     if (selectedUnit == this.value) {
@@ -388,6 +393,7 @@ add_meta_box( 'unit_Project_Information', "Project Information", array($this,'av
                 if (!unitIsPresent) {
                     htmlText = '<div class="repeat-fields">'
                     htmlText += '<input class="parent_units" name="parent_unit[]" enabled=false style="vertical-align:top;" value="' + selectedUnit + '" type="text" ">';
+                    htmlText += '<input class="parent_units" name="parent_unit_hidden[]" enabled=false style="vertical-align:top;" value="' + selectedUnit_hidden + '" type="hidden" ">';  
                     htmlText += '<input type="button" value="Unselect this Unit" onclick="removethis('+size+')">';
                     htmlText += '</div>';
                     jQuery(".repeat-wrapper").append(htmlText);
@@ -451,8 +457,9 @@ add_meta_box( 'unit_Project_Information', "Project Information", array($this,'av
         $proj_head_number = sanitize_text_field( $_POST['proj_head_number']);
         $team_members = sanitize_text_field( $_POST['team_members']);
         $revision_note = sanitize_text_field( $_POST['revision_note']);        
-        $parentUnit_array = $_POST['parent_unit'];
-       
+        $parentUnit_array = $_POST['parent_unit_hidden'];
+        echo"<pre>",print_r($parentUnit_array),"</pre>" ;
+        //die; 
 
         $arraySize = sizeof($parentUnit_array);
         $allParentUnits = array();
@@ -465,7 +472,7 @@ add_meta_box( 'unit_Project_Information', "Project Information", array($this,'av
             $allParentUnits[$arrayIndex] = $parentUnitInfo;
             }
         }   
-
+ 
         // Update the meta field in the database.
 
         update_post_meta( $post_id, 'proj_abbr', $proj_abbr);
