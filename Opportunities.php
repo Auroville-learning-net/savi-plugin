@@ -8,6 +8,8 @@ class Opportunity
     {
         // Create a hook to create custom Post Type
         add_action( 'init', array($this, 'create_post_type' ));
+  
+       /* add_action( 'init', array($this, 'change_prerequest' ));*/
 
         // Create a hook to create metabox for the custom post type
         add_action( 'add_meta_boxes', array($this, 'init_metabox' ));
@@ -28,6 +30,31 @@ class Opportunity
 
     }
 
+     public function change_prerequest() {
+     
+     global $wpdb;
+     $my_query = new WP_Query('post_type=av_opportunity&posts_per_page=-1');
+      while ($my_query->have_posts()) : 
+      	$my_query->the_post(); 
+      	$postID = get_the_ID();
+        $prereuest = get_post_meta($postID,'savi_opp_tag_prerequisites',true);
+      	if(!empty($prereuest)){
+                $array_prereuest = explode("|",$prereuest);
+                $saved_prerequisites="";
+       		for($i=0;$i<count($array_prereuest);$i++){
+            	   $saved_prerequisites.= $array_prereuest[$i]." ";
+       		}
+       		echo "Prereuqest :".$saved_prerequisites."<br>";
+        	$wpdb->query("UPDATE wp_postmeta SET meta_key ='prerequisites' WHERE post_id = '$postID' and meta_key ='savi_opp_tag_prerequisites' ");
+        	$prerequisites = sanitize_text_field( $saved_prerequisites);
+        	$wpdb->query("UPDATE wp_postmeta SET meta_value ='$saved_prerequisites' WHERE post_id = '$postID' and meta_key ='prerequisites' ");
+      	}
+      endwhile;  
+      wp_reset_query(); 
+     
+    
+     
+     }
 
 
 
@@ -43,6 +70,7 @@ class Opportunity
                 'public' => true,
                 'has_archive' => true,
                 'rewrite' => array('slug' => $this->custom_type),
+			
             )
         );
     }
@@ -256,8 +284,7 @@ function savi_opportunity_categories()  {
         if (sizeof($postmetaArray) > 0) {
             $revisions = $postmetaArray['comments'][0];
             $excerpt = $postmetaArray['excerpt'][0];
-            $saved_skillsGain = $postmetaArray['skills_gain'][0];
-            $saved_dailyTasks = $postmetaArray['daily_tasks'][0];
+          
             
         }
         else {
@@ -274,7 +301,7 @@ function savi_opportunity_categories()  {
                 echo "</div>";
             echo "</div>";
 
-            echo "<div class='disp-row rwmb-textarea-wrapper'>";
+           /* echo "<div class='disp-row rwmb-textarea-wrapper'>";
             // Field Definition for Excerpt
                 echo " <div class='rwmb-label'>";
                     echo "<label for='excerpt'>Excerpt</label>\n";
@@ -283,26 +310,8 @@ function savi_opportunity_categories()  {
                     echo "<textarea rows='4' cols='50' name='excerpt' id='excerpt' class='rwmb-textarea large-text'>$excerpt</textarea>";
                 echo "</div>";
             echo "</div>";
- 
-             echo "<div class='disp-row'>";
-            echo " <div class='rwmb-label'>";
-                echo "<label for='skillsGain'>Skills Gain</label>\n";
-            echo " </div>";
-            echo "<div class='rwmb-input'>\n";
+         */
                 
-                echo "<textarea rows='4' cols='50' name='skills_gain' id='skills_gain' class='rwmb-textarea large-text'>$saved_skillsGain</textarea>";
-            echo "</div>";
-        echo "</div>";
-        
-         echo "<div class='disp-row'>";
-            echo " <div class='rwmb-label'>";
-                echo "<label for='dailyTasks'>Daily Tasks</label>\n";
-            echo " </div>";
-            echo "<div class='rwmb-input'>\n";
-              echo "<textarea rows='4' cols='50' name='daily_tasks' id='daily_tasks' class='rwmb-textarea large-text'>$saved_dailyTasks</textarea>";
-                
-            echo "</div>";
-        echo "</div>";       
           
 
    }
@@ -359,8 +368,97 @@ function savi_opportunity_categories()  {
         $afternoon_timings = sanitize_text_field( $_POST['afternoontimings']);
         $skillsGain = sanitize_text_field( $_POST['skills_gain']);
         $dailyTasks = sanitize_text_field( $_POST['daily_tasks']);
-        
+        $previousunit = sanitize_text_field( $_POST['previous_unit']);        
+        $previousproject = sanitize_text_field( $_POST['previous_project']);  
+        $prerequisites = sanitize_text_field( $_POST['prerequisites']);
+        $no_of_opportunities = sanitize_text_field( $_POST['no_of_opportunities']);  
+        //Get the assoiciate opportunities for that unit   
+        $associateOpportunityMeta = get_post_meta($av_units, 'unit_opportunity', false);
+        $unitAllOpportunities = $associateOpportunityMeta[0];
+        $is_unit_opp ="no";
+     
+        //Get the assoiciate opportunities for that project
+        $associateProjectMeta = get_post_meta($unit_project, 'project_opportunity', false);
+        $projectAllOpportunities = $associateProjectMeta[0];
+        $is_project_opp ="no"; 
+   
+        /*This section saving the opportunity to units starts */
+       
+        if (sizeof($unitAllOpportunities) > 0 && is_array($unitAllOpportunities)) : // already this unit having opportunities
+            foreach($unitAllOpportunities as $key=>$unitOpportunity) {
+              if($unitOpportunity['unit_opportunity'] == $post_id ) : // check the opportunity is exits in the array
+                $is_unit_opp ="yes";
+              endif; 
+            }
+            if( $is_unit_opp == "no" ) : // if the opportunity not exists in the array it will add the opportunity to the array
+                $opportunityInfo = array ("unit_opportunity" => $post_id,);  
+                $unitAllOpportunities[] = $opportunityInfo;   
+              endif;    
+        else : // Insert new opportunity to the unit
+             $opportunityInfo = array ("unit_opportunity" => $post_id,);  
+             $unitAllOpportunities[] = $opportunityInfo;         
+        endif;
+       update_post_meta( $av_units, 'unit_opportunity', $unitAllOpportunities);  // saving current unit opportunity 
+       if( $previousunit != $av_units ) :
+       // check the previous unit with current unit if both are not equal then remove the opportunity from the unit
+          $associatePreviousOpportunityMeta = get_post_meta($previousunit, 'unit_opportunity', false);
+          $previousUnitAllOpportunities = $associatePreviousOpportunityMeta[0];
+       
+          $currentUnitAllOpportunities = array(); 
+          if (sizeof( $previousUnitAllOpportunities ) > 0 && is_array( $previousUnitAllOpportunities )) :
+              foreach($previousUnitAllOpportunities as $key=>$unitPreviousOpportunity) {
+                  if( $unitPreviousOpportunity['unit_opportunity'] != $post_id ) :
+                      $updateopportunityInfo = array ("unit_opportunity" => $unitPreviousOpportunity['unit_opportunity'],);  
+                      $currentUnitAllOpportunities[] = $updateopportunityInfo;   
+                  endif; 
+              }
+         endif;
+            
+         update_post_meta( $previousunit, 'unit_opportunity', $currentUnitAllOpportunities); // update the previous unit opportunities 
+      endif; 
+     /*This section saving the opportunity to units ends */  
+    
+     /*This section saving the opportunity to projects starts */
 
+        if (sizeof($projectAllOpportunities) > 0 && is_array($projectAllOpportunities)) : // already this project having opportunities
+            foreach($projectAllOpportunities as $key=>$projectOpportunity) {
+              if($projectOpportunity['project_opportunity'] == $post_id ) : // check the opportunity is exits in the array
+                $is_project_opp ="yes";
+              endif; 
+            }
+            if( $is_project_opp == "no" ) : // if the opportunity not exists in the array it will add the opportunity to the array
+              $opportunityprojectInfo = array ("project_opportunity" => $post_id,);  
+              $projectAllOpportunities[] = $opportunityprojectInfo;     
+              endif;    
+        else : // Insert new opportunity to the project
+             $opportunityprojectInfo = array ("project_opportunity" => $post_id,);  
+             $projectAllOpportunities[] = $opportunityprojectInfo;         
+        endif;
+        if($unit_project != 0) :  //Not update the post meta for General Project
+         update_post_meta( $unit_project, 'project_opportunity', $projectAllOpportunities); // saving current project opportunity 
+        endif;
+        if( $previousproject != $unit_project ) :
+         
+         // check the previous project with current project if both are not equal then remove the opportunity from the unit
+          $associatePreviousProjectOpportunityMeta = get_post_meta($previousproject, 'project_opportunity', false);
+          $projectPreviousAllOpportunities = $associatePreviousProjectOpportunityMeta[0];
+          $currentProjectAllOpportunities = array(); 
+          if (sizeof($projectPreviousAllOpportunities) > 0 && is_array($projectPreviousAllOpportunities)) :
+              foreach($projectPreviousAllOpportunities as $key=>$projectPreviousOpportunity) {
+                  if( $projectPreviousOpportunity['project_opportunity'] != $post_id) :
+                      $updateopportunityInfo = array ("project_opportunity" => $projectPreviousOpportunity['project_opportunity'],);  
+                      $currentProjectAllOpportunities[] = $updateopportunityInfo;   
+                  endif; 
+              }
+         endif;
+          if($previousproject != 0) :  //Not update the post meta for General Project
+            update_post_meta( $previousproject, 'project_opportunity', $currentProjectAllOpportunities);
+          endif;        
+          // update the previous project opportunities
+      endif; 
+      
+
+     /*This section saving the opportunity to projects ends */    
 
         update_post_meta( $post_id, 'av_unit', $av_units);
         update_post_meta( $post_id, 'projectname', $unit_project);
@@ -381,6 +479,8 @@ function savi_opportunity_categories()  {
         update_post_meta( $post_id, 'afternoontimings', $afternoon_timings);
         update_post_meta( $post_id, 'skills_gain', $skillsGain);
         update_post_meta( $post_id, 'daily_tasks', $dailyTasks);
+        update_post_meta( $post_id, 'prerequisites', $prerequisites);
+        update_post_meta( $post_id,'no_of_opportunities',$no_of_opportunities);
 
     }
 
@@ -408,7 +508,11 @@ function savi_opportunity_categories()  {
             $morning_timings = $postmetaArray['morningtimings'][0];
             $afternoon_timings = $postmetaArray['afternoontimings'][0];
             $saved_architect_semester = $postmetaArray['architect_semester'][0];
-
+            $saved_skillsGain = $postmetaArray['skills_gain'][0];
+            $saved_dailyTasks = $postmetaArray['daily_tasks'][0];
+            $saved_prerequisites = $postmetaArray['prerequisites'][0];
+            $saved_no_of_opportunities = $postmetaArray['no_of_opportunities'][0];
+          
 
         } else {
 
@@ -428,6 +532,10 @@ function savi_opportunity_categories()  {
             $morning_timings = '';
             $afternoon_timings = '';
             $saved_architect_semester = '';
+            $saved_skillsGain = "";
+            $saved_dailyTasks = "";
+             $saved_prerequisites ="";
+             $saved_no_of_opportunities ="";
         }
 
         $AVUnitQuery = new WP_Query( array(
@@ -581,7 +689,7 @@ function savi_opportunity_categories()  {
         </style>
 
 
-        <?php
+        <?php 
 
         // Field definition for AV Units
         echo "<div class='disp-row'>";
@@ -590,6 +698,7 @@ function savi_opportunity_categories()  {
            echo "</div>";
             echo "<div class='rwmb-input'>\n";
                 echo $unitSelectHTML; // We have constructed this earlier
+                echo "<input type='hidden' name='previous_unit' value='$saved_AVUnit' />\n";
             echo "</div>";
         echo "</div>";
 
@@ -604,6 +713,7 @@ function savi_opportunity_categories()  {
           echo " </div>";
             echo "<div class='input'>\n";
                 echo $projSelectHTML; // We have constructed this earlier
+                 echo "<input type='hidden' name='previous_project' value='".($saved_projname ==""?0:$saved_projname)."' />\n"; 
             echo "</div>";
         echo "</div>";
 
@@ -748,6 +858,43 @@ function savi_opportunity_categories()  {
                     echo "<textarea rows='4' cols='50' name='afternoontimings' class='rwmb-textarea large-text'>$afternoon_timings</textarea>";
                 echo "</div>";
             echo "</div>";
+              echo "<div class='disp-row'>";
+            echo " <div class='rwmb-label'>";
+                echo "<label for='skillsGain'>Skills Gain</label>\n";
+            echo " </div>";
+            echo "<div class='rwmb-input'>\n";
+                
+                echo "<textarea rows='4' cols='50' name='skills_gain' id='skills_gain' class='rwmb-textarea large-text'>$saved_skillsGain</textarea>";
+            echo "</div>";
+        echo "</div>";
+        
+         echo "<div class='disp-row'>";
+            echo " <div class='rwmb-label'>";
+                echo "<label for='dailyTasks'>Daily Tasks</label>\n";
+            echo " </div>";
+            echo "<div class='rwmb-input'>\n";
+              echo "<textarea rows='4' cols='50' name='daily_tasks' id='daily_tasks' class='rwmb-textarea large-text'>$saved_dailyTasks</textarea>";
+                
+            echo "</div>";
+        echo "</div>";  
+        echo "<div class='disp-row'>";
+            echo " <div class='rwmb-label'>";
+                echo "<label for='prerequisites'>Prerequisites</label>\n";
+            echo " </div>";
+            echo "<div class='rwmb-input'>\n";
+              echo "<textarea rows='4' cols='50' name='prerequisites' id='prerequisites' class='rwmb-textarea large-text'>$saved_prerequisites</textarea>";
+                
+            echo "</div>";
+        echo "</div>";  
+         echo "<div class='disp-row'>";
+            echo " <div class='rwmb-label'>";
+                echo "<label for='No of Opportunities'>No of Opportunities</label>\n";
+            echo " </div>";
+            echo "<div class='rwmb-input'>\n";
+              echo "<input type='text' name='no_of_opportunities' id='no_of_opportunities' class='rwmb-text' value='$saved_no_of_opportunities' />";
+                
+            echo "</div>";
+        echo "</div>";  
 
         ?>
 

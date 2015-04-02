@@ -1,0 +1,105 @@
+/*!
+ * Bootstrap v2.3.0
+ *
+ * Copyright 2012 Twitter, Inc
+ * Licensed under the Apache License v2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Designed and built with all the love in the world @twitter by @mdo and @fat.
+ */
+
+
+/* custom css here */
+.LabelDiv{
+	width:20%;
+	float:left;
+	display:inline-block;
+	font-weight:bolder;
+	padding:10px 0px 10px 0px;
+	
+	
+}
+.ValueDiv{
+	width:80%;
+	float:left;
+	display:inline-block;
+	padding:10px 0px 10px 0px;
+}
+.mainDiv{
+	width:100%;
+	display:inline-block;
+	border-bottom: 1px dotted #ccc;
+}
+
+.ValueDiv li.savi-admin-note {
+    border-color: #FFFFFF #DFDFDF #DFDFDF;
+    border-style: dashed;
+    border-width: 1px;
+    margin: 0;
+    padding: 10px;
+    position: relative;
+    min-height: 50px;
+}
+
+.ValueDiv li.savi-admin-note:first-child {
+    border-radius: 3px 3px 0 0;
+    border-bottom: 1px dashed #DFDFDF;
+    border-top: 1px dashed #DFDFDF;
+}
+..ValueDiv li.savi-admin-note:last-child {
+    border-radius: 0 0 3px 3px;
+}
+.ValueDiv li.savi-admin-note .savi-admin-note-avatar {
+    background: none repeat scroll 0 0 #D5D5D5;
+    border-radius: 50% 50% 50% 50%;
+    height: 48px;
+    left: 10px;
+    padding: 3px;
+    position: absolute;
+    top: 10px;
+    width: 48px;
+}
+.ValueDiv li.savi-admin-note .savi-admin-note-avatar img {
+    -webkit-border-radius: 50%;
+    -moz-border-radius: 50%;
+    -ms-border-radius: 50%;
+    -o-border-radius: 50%;
+    border-radius: 50%;
+}
+.ValueDiv li.savi-admin-note .savi-admin-note-container {
+    margin-left: 68px;
+}
+.ValueDiv li.savi-admin-note .savi-admin-note-container .savi-admin-note-meta {
+    color: #888888;
+    font-size: 12px;
+}
+.ValueDiv li.savi-admin-note .savi-admin-note-container .savi-admin-note-meta .savi-admin-note-separator {
+    color: #DFDFDF;
+}
+.ValueDiv li.savi-admin-note .savi-admin-note-container p {
+    margin: 5px 0 10px;
+}
+
+.ValueDiv li.savi-admin-note .savi-admin-note-avatar {
+    background: none repeat scroll 0 0 #D5D5D5;
+    border-radius: 50% 50% 50% 50%;
+    height: 48px;
+    padding: 3px;
+    position: absolute;
+    top: 15%;
+    width: 48px;
+}
+
+
+#mymetabox_Admin Details .LabelDiv {
+   
+    width: 100%;
+}
+
+/* profile reviews */
+.syl_title{
+    width: 100%;
+}
+.syl_content{
+    width: 99%;
+}

@@ -109,7 +109,7 @@ add_meta_box( 'unit_Project_Information', "Project Information", array($this,'av
 			<div class="rwmb-input">
 			    <input type="text" data-options="{&quot;dateFormat&quot;:&quot;dd-mm-yy&quot;,&quot;showButtonPanel&quot;:true,&quot;appendText&quot;:&quot;(dd-mm-yyyy)&quot;,&quot;changeMonth&quot;:true,&quot;changeYear&quot;:true}" size="30" id="dp1385976672444" value="<?php echo $start_date; ?>" name="start_date" class="rwmb-date hasDatepicker">
 			    <span class="ui-datepicker-append">
-			       (dd-mm-yyyy)
+			       (yyy-mm-dd)
 			     </span>
 			</div>
     </div>
@@ -120,7 +120,7 @@ add_meta_box( 'unit_Project_Information', "Project Information", array($this,'av
 	<div class="rwmb-input">
 	    <input type="text" data-options="{&quot;dateFormat&quot;:&quot;dd-mm-yy&quot;,&quot;showButtonPanel&quot;:true,&quot;appendText&quot;:&quot;(dd-mm-yyyy)&quot;,&quot;changeMonth&quot;:true,&quot;changeYear&quot;:true}" size="30" id="dp1385976672445" value="<?php echo $end_date; ?>" name="end_date" class="rwmb-date hasDatepicker">
 	    <span class="ui-datepicker-append">
-	       (dd-mm-yyyy)
+	       (yyy-mm-dd)
 	    </span>
 	    </div>
 	</div>
@@ -323,9 +323,9 @@ add_meta_box( 'unit_Project_Information', "Project Information", array($this,'av
     function parent_units_metabox($post) {
         $parentUnitsMeta = get_post_meta($post->ID, 'parent_unit', false);
         $allParentUnits = $parentUnitsMeta[0];
-        $avUnitQuery = new WP_Query(array('post_type' => 'av_unit',));
+        $avUnitQuery = new WP_Query(array('post_type' => 'av_unit','posts_per_page'=>-1,));
         $avOptions = "";
-                
+       // echo "<pre>", print_r($avUnitQuery), "</pre>".count($avUnitQuery);        
         
         if($avUnitQuery->have_posts()) {
             while ( $avUnitQuery->have_posts() ) {
