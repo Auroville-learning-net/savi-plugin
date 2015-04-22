@@ -103,3 +103,11 @@
 .syl_content{
     width: 99%;
 }
+#smack-content .smack-postform .updated{
+
+display:none !important;
+
+}
+tr.profile_incomplete th{
+	visibility: hidden;
+}

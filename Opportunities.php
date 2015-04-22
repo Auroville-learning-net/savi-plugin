@@ -66,7 +66,7 @@ class Opportunity
                     'name' => __( 'Opportunities' ),
                     'singular_name' => __( 'Opportunity' )
                 ),
-                'supports' => array( 'title', 'editor', 'thumbnail'),
+                'supports' => array( 'title', 'editor', 'thumbnail', 'excerpt', 'comments','revisions'),
                 'public' => true,
                 'has_archive' => true,
                 'rewrite' => array('slug' => $this->custom_type),
@@ -318,7 +318,7 @@ function savi_opportunity_categories()  {
 
     // Called when the custom posttype is saved
     public function save_opportunity_postdata( $post_id ) {
-        global $post ;
+        global $post,$wpdb ;
 
         if( $post->post_type != $this->custom_type ) return $post_id;
         /*
@@ -371,7 +371,9 @@ function savi_opportunity_categories()  {
         $previousunit = sanitize_text_field( $_POST['previous_unit']);        
         $previousproject = sanitize_text_field( $_POST['previous_project']);  
         $prerequisites = sanitize_text_field( $_POST['prerequisites']);
-        $no_of_opportunities = sanitize_text_field( $_POST['no_of_opportunities']);  
+        $no_of_opportunities = sanitize_text_field( $_POST['no_of_opportunities']); 
+        $opportunity_status = sanitize_text_field( $_POST['opportunity_status']); 
+         
         //Get the assoiciate opportunities for that unit   
         $associateOpportunityMeta = get_post_meta($av_units, 'unit_opportunity', false);
         $unitAllOpportunities = $associateOpportunityMeta[0];
@@ -481,6 +483,56 @@ function savi_opportunity_categories()  {
         update_post_meta( $post_id, 'daily_tasks', $dailyTasks);
         update_post_meta( $post_id, 'prerequisites', $prerequisites);
         update_post_meta( $post_id,'no_of_opportunities',$no_of_opportunities);
+        update_post_meta( $post_id,'opportunity_status',$opportunity_status);
+        
+        if(isset($_POST['hidden_contact_user']) &&  $_POST['hidden_contact_user'] !=""){
+			update_post_meta( $post_id,'contact_user',$_POST['hidden_contact_user']);
+		}
+        
+        /* ==========================================================================
+           check the mentor already create or not, if not exists create new mentor 
+           user
+        ============================================================================*/
+        
+        if (email_exists($contact_email) == false && !empty($contact_email) ) :
+        			
+     	        $current_increment_id = $wpdb->get_var("SELECT `AUTO_INCREMENT` FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = '".DB_NAME."' AND TABLE_NAME = 'wp_users'" );
+                		
+                $mentorName = "mentor".$current_increment_id;
+          		$random_password = wp_generate_password( $length=12, $include_standard_special_chars=false );
+	       		$user_id = wp_create_user( $mentorName, $random_password, $contact_email );
+	       	
+                $Name =  $contact_name;
+	       		wp_update_user( array( 'ID' => $user_id, 'user_nicename' => $Name ,"display_name" => $Name) );
+	       		$wp_user_object = new WP_User($user_id);
+          		
+          		add_user_meta( $user_id, 'profile_post_id', $post_id); 
+          		add_user_meta( $user_id, 'savi_role', 'opportunity-owner'); 
+          		add_user_meta( $user_id, 'mentor_phone',$contact_phone ); 
+				update_post_meta( $post_id,'contact_user',$user_id);
+				   
+          		/*$htmlmessage = $this->saviGetTemplate($postID,$user_id,$random_password);
+          		
+          		$site_url = get_bloginfo('wpurl');
+          		add_filter( 'wp_mail_content_type', array($this,'set_html_content_type') );
+          		$subject = "New User Created: ".$site_url."";
+          		wp_mail($clientEmail, $subject, $htmlmessage);*/
+          
+        else:
+        
+           if($contact_email!=""){
+			 
+			    $contact_user = get_post_meta($post_id,'contact_user',true);
+			   
+			    if($contact_user ==""){
+				     
+				   $user_id = get_user_by( 'email', $contact_email )->ID;
+				   update_post_meta( $post_id,'contact_user',$user_id);	
+			    }		
+			   
+		   }    
+                       
+        endif; 
 
     }
 
@@ -512,7 +564,8 @@ function savi_opportunity_categories()  {
             $saved_dailyTasks = $postmetaArray['daily_tasks'][0];
             $saved_prerequisites = $postmetaArray['prerequisites'][0];
             $saved_no_of_opportunities = $postmetaArray['no_of_opportunities'][0];
-          
+            $opportunity_status = $postmetaArray['opportunity_status'][0];
+             
 
         } else {
 
@@ -534,8 +587,9 @@ function savi_opportunity_categories()  {
             $saved_architect_semester = '';
             $saved_skillsGain = "";
             $saved_dailyTasks = "";
-             $saved_prerequisites ="";
-             $saved_no_of_opportunities ="";
+            $saved_prerequisites ="";
+            $saved_no_of_opportunities ="";
+            $opportunity_status =""; 
         }
 
         $AVUnitQuery = new WP_Query( array(
@@ -632,8 +686,6 @@ function savi_opportunity_categories()  {
                 // End the construct of the option
                 $projSelectHTML .= ">$projname</option>\n";
             }
-
-
             if ($avUnitName != $pr_avUnitName) {
                 if (!firstrow) {
                     $projhiddenSelectHTML .= "</optgroup>\n";
@@ -717,6 +769,32 @@ function savi_opportunity_categories()  {
             echo "</div>";
         echo "</div>";
 
+          // Field Definition for Mentor users shows while creating new opportunity
+       if(!isset($_REQUEST['post'])):
+        $mentor_users =  get_users( array('meta_key' => 'savi_role','meta_value' => 'opportunity-owner','meta_compare' 
+        =>'=','meta_type' => CHAR ) );
+       // echo"<pre>",print_r($mentor_users),"</pre>";
+       foreach($mentor_users as $mentor_user){
+		   if($mentor_user->ID !=1){
+			   $user_details =$mentor_user->ID."|".$mentor_user->display_name."|".$mentor_user->user_email."|"
+									 .get_user_meta($mentor_user->ID,'mentor_phone',true);
+			   $mentor_user_select.="<option value = '$user_details'>".$mentor_user->display_name."</option>";
+		   }
+	   }
+        echo "<div class='disp-row'>";
+          echo " <div class='rwmb-label'>";
+            echo "<label for='contactPerson'>Mentor Users</label>\n";
+          echo " </div>";
+            echo "<div class='input'>\n";
+             echo "<input type='hidden' name='hidden_contact_user' id='hidden_contact_user' value='' />";
+               echo  '<select  id="mentor_user" name="mentor_user" class="rwmb-select" onchange="mentor_userChanged()">';
+               echo "<option value=''>Select Mentor User to update the  opportunity</option>";
+                echo $mentor_user_select;
+                echo "<option value='add_new_user'>Add New User</option>";
+                echo '</select>';
+            echo "</div>";
+        echo "</div>";
+        endif;
           // Field Definition for Contact Person
         echo "<div class='disp-row'>";
           echo " <div class='rwmb-label'>";
@@ -733,7 +811,7 @@ function savi_opportunity_categories()  {
                 echo "<label for='contactEmail'>Contact Email</label>\n";
              echo " </div>";
             echo "<div class='input'>\n";
-                echo "<input type='text' name='contactEmail' value='$saved_email' />\n";
+                echo "<input type='email' name='contactEmail' value='$saved_email' />\n";
             echo "</div>";
         echo "</div>";
 
@@ -743,7 +821,7 @@ function savi_opportunity_categories()  {
                 echo "<label for='contactPhone'>Contact Phone</label>\n";
             echo " </div>";
             echo "<div class='input'>\n";
-                echo "<input type='text' name='contactPhone' value='$saved_phone' />\n";
+                echo "<input type='phone' name='contactPhone'  value='$saved_phone' />\n";
             echo "</div>";
         echo "</div>";
 
@@ -886,6 +964,7 @@ function savi_opportunity_categories()  {
                 
             echo "</div>";
         echo "</div>";  
+        
          echo "<div class='disp-row'>";
             echo " <div class='rwmb-label'>";
                 echo "<label for='No of Opportunities'>No of Opportunities</label>\n";
@@ -895,6 +974,26 @@ function savi_opportunity_categories()  {
                 
             echo "</div>";
         echo "</div>";  
+       
+        echo "<div class='disp-row'>";
+           echo " <div class='rwmb-label'>";
+                echo "<label for='duration'>Opportunity Status</label>\n";
+           echo " </div>";
+            echo "<div class='input'>\n";
+           $opened=($opportunity_status == "opened")?"selected='selected'":"";
+           $closed=($opportunity_status == "closed")?"selected='selected'":"";
+          ?>
+
+           <select size="0" id="opportunity_status" name="opportunity_status" class="rwmb-select">
+             
+             <option value="opened"  <?php echo $opened;?> >Opened</option>
+             <option value="closed" <?php echo $closed;?>>Closed</option>
+             
+           </select>
+
+         <?php
+            echo "</div>";
+        echo "</div>";
 
         ?>
 
@@ -925,6 +1024,28 @@ function savi_opportunity_categories()  {
                 jQuery('#projectname').data('combobox').refresh();
 
             }
+             function mentor_userChanged() {
+				  jQuery("input[name=contactPerson]").attr('value','');
+					 jQuery("input[name=contactEmail]").attr('value','');
+					 jQuery("input[name=contactPhone]").attr('value','');
+					  jQuery("input[name=hidden_contact_user]").attr('value','');
+				 var mentor_user = jQuery("#mentor_user").val();
+				 if(mentor_user != "add_new_user"){
+					 var mentors = mentor_user.split("|");
+					  jQuery("input[name=contactPerson]").attr('readonly',true);
+					 jQuery("input[name=contactEmail]").attr('readonly',true);
+					 jQuery("input[name=contactPhone]").attr('readonly',true);
+					 jQuery("input[name=hidden_contact_user]").val(mentors[0]);
+					 
+					 jQuery("input[name=contactPerson]").val(mentors[1]);
+					 jQuery("input[name=contactEmail]").val(mentors[2]);
+					 jQuery("input[name=contactPhone]").val(mentors[3]);
+			     }else{
+					 jQuery("input[name=contactPerson]").attr('readonly',false);
+					 jQuery("input[name=contactEmail]").attr('readonly',false);
+					 jQuery("input[name=contactPhone]").attr('readonly',false);
+				 }
+		     }		 
             </script>
         <?php
 

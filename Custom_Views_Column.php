@@ -92,27 +92,42 @@ class Custom_Views_Column  {
 		                       $workarea_results = $wpdb->get_results($workarea_sql,ARRAY_A);
 		                       $workarea_meta_value =$workarea_results[0]['meta_value']; 
 		                       $workarea_iterm_value=unserialize($workarea_meta_value);
-		                       for($i=0;$i<count($workarea_iterm_value);$i++){
-        		                       $term = get_term( $workarea_iterm_value[$i], 'savi_opp_cat_work_area' );
-				               $workarea.="<p>".$term->name."</p>";   
-                                       }
+		                       if(count($workarea_iterm_value) >1 && is_array($workarea_iterm_value)  ) :
+									  for($i=0;$i<count($workarea_iterm_value);$i++){
+        		                        $term = get_term( $workarea_iterm_value[$i], 'savi_opp_cat_work_area' );
+										$workarea.="<p>".$term->name."</p>";   
+                                      }
+							 else:
+									if($workarea_meta_value == "savi0"):
+									  $workarea.="<p>Any Workareas</p>";
+									else:
+									  $term = get_term( $workarea_meta_value, 'savi_opp_cat_work_area' );
+									  $workarea.="<p>".$term->name."</p>";
+									endif;	  
+							 endif;
+		                      
   	                               $worktype_sql="SELECT meta_value FROM wp_frm_item_metas WHERE field_id = 468 AND item_id
                                                           =(SELECT id FROM wp_frm_items WHERE form_id = 19 AND post_id=$post_id)";
 		                       $worktype_results=$wpdb->get_results($worktype_sql,ARRAY_A);
 		                       $worktype_meta_value =$worktype_results[0]['meta_value']; 
 		                       $worktype_iterm_value=unserialize($worktype_meta_value);
-		                       for($j=0;$j<count($worktype_iterm_value);$j++){
-        		                       $term1 = get_term( $worktype_iterm_value[$j], 'savi_opp_cat_work_type' );
-				               $worktype.="<p>".$term1->name."</p>";   
-                                       }
-                                       $workarea_content ="<div class='popbox' id=workarea_".$post_id.">
+		                        if(count($worktype_iterm_value) >1 && is_array($worktype_iterm_value)  ) :
+		                            for($j=0;$j<count($worktype_iterm_value);$j++){
+        		                        $term1 = get_term( $worktype_iterm_value[$j], 'savi_opp_cat_work_type' );
+										$worktype.="<p>".$term1->name."</p>";   
+                                            }
+                                        else:
+                                              $term1 = get_term( $worktype_meta_value, 'savi_opp_cat_work_type' );
+			                      $worktype.="<p>".$term1->name."</p>";   
+                                        endif;
+                                         $workarea_content ="<div class='popbox' id=workarea_".$post_id.">
                                                          <h2>Work Areas</h2>".$workarea."</div>";
-        			       $worktype_content ="<div class='popbox' id=worktype_".$post_id.">    
+        			         $worktype_content ="<div class='popbox' id=worktype_".$post_id.">    
                                                                      <h2>Work Types</h2>".$worktype."</div>";
 
                                        $action = "<a href='javascript:void' class='popper'  
                                                     data-popbox=skill_".$post_id.">Skills</a>".$skills_content." | ";
-        				$action.= "<a href='javascript:void' class='popper' 
+        				  $action.= "<a href='javascript:void' class='popper' 
                                                     data-popbox=motivation_".$post_id.">Motivation</a>".$motivation_content;
 
 
@@ -136,16 +151,16 @@ class Custom_Views_Column  {
 		
 		
       switch( $column ) {
-      	                   case 'savi_views_contact-details_email' :
-      	                   $email = get_post_meta( $post_id, 'savi_views_contact-details_email', true );
-                     	echo  $email;
-				      break;
+			   case 'savi_views_contact-details_email' :
+					   $email = get_post_meta( $post_id, 'savi_views_contact-details_email', true );
+					echo  $email;
+				  break;
 				case 'savi_views_contact-details_phone-number-in-india' :
 						$phone = get_post_meta( $post_id, 'savi_views_contact-details_phone-number-in-india', true );
 						if(empty($phone)):
 						   $phone = get_post_meta( $post_id, 'savi_views_contact-details_phone-number', true );
 						endif;
-						echo  $phone;
+						echo $phone;
 						break; 
 				case 'savi_views_contact-details_nationality' :
 						$country = get_post_meta( $post_id, 'savi_views_contact-details_nationality', true );
@@ -192,10 +207,19 @@ class Custom_Views_Column  {
 		                       $workarea_results = $wpdb->get_results($workarea_sql,ARRAY_A);
 		                       $workarea_meta_value =$workarea_results[0]['meta_value']; 
 		                       $workarea_iterm_value=unserialize($workarea_meta_value);
-		                       for($i=0;$i<count($workarea_iterm_value);$i++){
-        		                       $term = get_term( $workarea_iterm_value[$i], 'savi_opp_cat_work_area' );
-				               $workarea.="<p>".$term->name."</p>";   
-                                       }
+		                       if(count($workarea_iterm_value) >1 && is_array($workarea_iterm_value)  ) :
+									  for($i=0;$i<count($workarea_iterm_value);$i++){
+        		                        $term = get_term( $workarea_iterm_value[$i], 'savi_opp_cat_work_area' );
+										$workarea.="<p>".$term->name."</p>";   
+                                      }
+							 else:
+									if($workarea_meta_value == "savi0"):
+									  $workarea.="<p>Any Workareas</p>";
+									else:
+									  $term = get_term( $workarea_meta_value, 'savi_opp_cat_work_area' );
+									  $table_value467.="<p>".$term->name."</p>";
+									endif;	  
+							 endif;
   	                               $worktype_sql="SELECT meta_value FROM wp_frm_item_metas WHERE field_id = 468 AND item_id
                                                           =(SELECT id FROM wp_frm_items WHERE form_id = 19 AND post_id=$post_id)";
 		                       $worktype_results=$wpdb->get_results($worktype_sql,ARRAY_A);
@@ -233,10 +257,10 @@ class Custom_Views_Column  {
                     foreach($allexpressOpportunities as $key=>$expressOpportunity) {
                         $expressOpportunitiesID = $expressOpportunity['express_opportunity'];
                         $unitID = (int)get_post_meta($expressOpportunitiesID,'av_unit',true);
-                        $volunteer_UnitName = get_the_title( $unitID);
+                        $volunteer_UnitName = trim(strtoupper(get_post_meta($unitID,'unit_short_name',true)),"-"); 
                         $expressOpportunitiesValue.= get_the_title($expressOpportunitiesID)." ( ".$volunteer_UnitName." )<br/>";
                      }
-					 $opportunities = ($post->post_type == "view_3")? "Ordered Opportunity":"Preferred Opportunity";
+					 $opportunities = "Preferred Opportunity";
                  $content ="<div class='popbox' id=express_opportunity_".$post_id."><h2>".$opportunities."</h2>". nl2br($expressOpportunitiesValue)."</div>";
         				
         			  $action = "<a href='javascript:void' class='popper' data-popbox=express_opportunity_".$post_id.">".$opportunities."</a>"
@@ -244,7 +268,26 @@ class Custom_Views_Column  {
                  echo $action ; 
                } 
 					break;
-					
+			case 'ordered_opportunity' :
+					/* Get the genres for the post. */
+					$orderOpportunitiesMeta = get_post_meta( $post_id, 'ordered_opportunity', false );
+					$allorderOpportunities = $orderOpportunitiesMeta[0];
+					$orderOpportunitiesValue = "";
+                if (sizeof($allorderOpportunities) > 0 && is_array($allorderOpportunities)) {
+                    foreach($allorderOpportunities as $orderOpportunity) {
+                        $orderOpportunitiesID = $orderOpportunity;
+                        $unitID = (int)get_post_meta($orderOpportunitiesID,'av_unit',true);
+                       $volunteer_UnitName = trim(strtoupper(get_post_meta($unitID,'unit_short_name',true)),"-"); 
+                        $orderOpportunitiesValue.= get_the_title($orderOpportunitiesID)." ( ".$volunteer_UnitName." )<br/>";
+                     }
+					 $opportunities = "Ordered Opportunity";
+                     $content ="<div class='popbox' id=order_opportunity_".$post_id."><h2>".$opportunities."</h2>". nl2br($orderOpportunitiesValue)."</div>";
+        				
+        			  $action = "<a href='javascript:void' class='popper' data-popbox=order_opportunity_".$post_id.">".$opportunities."</a>"
+                                                                               . nl2br($content);
+                     echo $action ; 
+               } 
+					break;		
 			 	 		
 			  default :
 			  		break; 	
@@ -253,15 +296,16 @@ class Custom_Views_Column  {
   function savi_views5678_manage_columns( $column, $post_id ) {
 		global $post,$wpdb;
       switch( $column ) {
-                          	 case 'savi_views_contact-details_email' :
-                                       echo  $email;
-				      break;
+				 case 'savi_views_contact-details_email' :
+					 $email = get_post_meta( $post_id, 'savi_views_contact-details_email', true );
+				     echo  $email;
+				  break;
 				case 'savi_views_contact-details_phone-number-in-india' :
 						$phone = get_post_meta( $post_id, 'savi_views_contact-details_phone-number-in-india', true );
 						if(empty($phone)):
 						   $phone = get_post_meta( $post_id, 'savi_views_contact-details_phone-number', true );
 						endif;
-						echo  $phone;
+						echo $phone;
 						break; 
 				case 'savi_views_contact-details_nationality' :
 						$country = get_post_meta( $post_id, 'savi_views_contact-details_nationality', true );
@@ -342,7 +386,7 @@ class Custom_Views_Column  {
 	 } 
 	  function savi_views34_edit_columns( $columns ) {
 	  global $post;
-	  $opportunities = ($post->post_type == "view_3")? "Ordered Opportunities":"Express Opportunities";
+	  $opportunities = ($post->post_type == "view_3")? "Ordered Opportunities":"Preferred Opportunities";
    	$columns = array(
 			'cb' => '<input type="checkbox" />',
 			'title' => __( 'Name' ),
@@ -350,7 +394,7 @@ class Custom_Views_Column  {
 			'savi_views_contact-details_phone-number-in-india' => __( 'Phone' ),
 			'savi_views_contact-details_nationality' => __( 'Country' ),
 			'savi_views_stay-details_duration' => __( 'Time of Stay' ),
-			'express_opportunities' => __( $opportunities )
+			'ordered_opportunity' => __( $opportunities )
 			
 		   );
 		return $columns;

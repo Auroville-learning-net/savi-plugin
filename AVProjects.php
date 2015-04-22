@@ -45,7 +45,7 @@ class AV_projects extends Listing
                     'name' => __( 'Projects' ),
                     'singular_name' => __( 'Project' )
                 ),
-                'supports' => array( 'title', 'editor', 'thumbnail', 'excerpt', 'comments','revisions'  ),
+                'supports' => array( 'title', 'editor', 'thumbnail', 'excerpt', 'comments','revisions'),
                 'public' => true,
                 'has_archive' => true,
                 'rewrite' => array('slug' => 'av_project'),
@@ -93,7 +93,7 @@ add_meta_box( 'unit_Project_Information', "Project Information", array($this,'av
 ?>
    	
      <div data-autosave="false" class="rwmb-meta-box"><input type="hidden" value="43d778ddf0" name="nonce_project-information" id="nonce_project-information">
-     <input type="hidden" value='<?php echo "/savi/wp-admin/post.php?post=$_GET[post]";?>&amp;action=edit&amp;message=1' name="_wp_http_referer">
+     <input type="hidden" value='<?php echo home_url()."/wp-admin/post.php?post=$_GET[post]";?>&amp;action=edit&amp;message=1' name="_wp_http_referer">
      <div class="rwmb-field rwmb-text-wrapper">
          <div class="rwmb-label">
 		       <label for="proj_abbr">Project Abbreviation</label>
@@ -153,9 +153,7 @@ add_meta_box( 'unit_Project_Information', "Project Information", array($this,'av
 		    <label for="team_members">Team Members</label>
 		</div>
 		<div class="rwmb-input">
-		    <textarea rows="5" cols="20" id="team_members" name="team_members" class="rwmb-textarea large-text">
-		    <?php echo $team_members; ?>
-		    </textarea>
+		    <textarea rows="5" cols="20" id="team_members" name="team_members" class="rwmb-textarea large-text"><?php echo $team_members; ?></textarea>
 		    <p class="description" id="team_members_description">Team Members - One Name per line please</p>
 		</div>
   </div>
@@ -169,114 +167,7 @@ add_meta_box( 'unit_Project_Information', "Project Information", array($this,'av
 
 
 
-  /*  public function init_av_projects_metabox() {
-
-             
-         global $meta_boxes;
-         $meta_boxes = array();
-    
-         $meta_boxes[] = array(
-                'title' => __( 'Project Information', 'rwmb' ),
-                        // Post types, accept custom post types as well - DEFAULT is array('post'). Optional.
-                        'pages' => array('av_project' ),
-                'fields' => array(
-
-                     // Name Landphone
-                    array(
-                        'name' => __( 'Project Abbreviation', 'rwmb' ),
-                        'id'   => "proj_abbr",
-                        'type' => 'text',
-
-                    ),
-
-                    // Start Date
-                    array(
-                        'name' => __( 'Start Date', 'rwmb' ),
-                        'id'   => "start_date",
-                        'type' => 'date',
-                        'required'  => true,
-                        
-                        // jQuery date picker options. See here http://api.jqueryui.com/datepicker
-                        'js_options' => array(
-                            'appendText'      => __( '(dd-mm-yyyy)', 'rwmb' ),
-                            'dateFormat'      => __( 'dd-mm-yy', 'rwmb' ),
-                            'changeMonth'     => true,
-                            'changeYear'      => true,
-                            'showButtonPanel' => true,
-                        ),
-                    ),
-
-                    // End Date
-                    array(
-                        'name' => __( 'End Date', 'rwmb' ),
-                        'id'   => "end_date",
-                        'type' => 'date',
-                        
-                        // jQuery date picker options. See here http://api.jqueryui.com/datepicker
-                        'js_options' => array(
-                            'appendText'      => __( '(dd-mm-yyyy)', 'rwmb' ),
-                            'dateFormat'      => __( 'dd-mm-yy', 'rwmb' ),
-                            'changeMonth'     => true,
-                            'changeYear'      => true,
-                            'showButtonPanel' => true,
-                        ),
-                    ),
-                    
-                     // Project Head Name
-                    array(
-                        'name' => __( 'Project Head Name', 'rwmb' ),
-                        'id'   => "proj_head_name",
-                        'type' => 'text',
-
-                    ),
-
-                    // Project Head Email
-                    array(
-                        'name'  => __( 'Project Head Email', 'rwmb' ),
-                        'id'    => "proj_head_email",
-                        
-                        'type'  => 'email',
-                        'std'   => '',
-                    ),
-                    
-                     // Project Head Number
-                    array(
-                        'name' => __( 'Project Head Phone', 'rwmb' ),
-                        'id'   => "proj_head_number",
-                        'type' => 'text',
-
-                    ),
-                   
-                    // Affiliation NoteTEXTAREA
-                    array(
-                        'name' => __( 'Team Members', 'rwmb' ),
-                        'desc' => __( 'Team Members - One Name per line please', 'rwmb' ),
-                        'id'   => "team_members",
-                        'type' => 'textarea',
-                        'cols' => 20,
-                        'rows' => 5,
-                    ),
-                    
-                    // Editor settings, see wp_editor() function: look4wp.com/wp_editor
-                'options' => array(
-                                'textarea_rows' => 5,
-                                'teeny'         => true,
-                                'media_buttons' => false,
-                            ),
-                       
-                 
-                                     
-                )
-                
-            );
-                    
-        
-        
-        global $meta_boxes;
-        foreach ( $meta_boxes as $meta_box ) {
-            new RW_Meta_Box( $meta_box );
-        }
-    } */
+ 
    // Showing the contents of the Metaboxes for AV_Projects Admin Metabox
     public function init_av_projects_admin_metabox() {
    
@@ -311,9 +202,7 @@ add_meta_box( 'unit_Project_Information', "Project Information", array($this,'av
 					<label for="revision_note">Revisions</label>
 				 </div>
 				 <div class="rwmb-input">
-                     <textarea rows="3" cols="20" id="revision_note" name="revision_note" class="rwmb-textarea large-text">
-                        <?php echo $revisions; ?>
-                     </textarea>
+                     <textarea rows="3" cols="20" id="revision_note" name="revision_note" class="rwmb-textarea large-text"><?php echo $revisions; ?></textarea>
                      <p class="description" id="revision_note_description">Revision Note</p>
                 </div>
             </div>
@@ -374,9 +263,9 @@ add_meta_box( 'unit_Project_Information', "Project Information", array($this,'av
         <script type="text/javascript">
         //<![CDATA[
                 
-             jQuery(document).ready(function(){
-                jQuery('.combobox').combobox()
-             });
+             //jQuery(document).ready(function(){
+               // jQuery('.combobox').combobox()
+             //});
 
             function addonemore() {
                 size = jQuery(".repeat-fields").size();

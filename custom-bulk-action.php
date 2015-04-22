@@ -9,62 +9,63 @@ class FRS_Custom_Bulk_Action {
 				add_action('load-edit.php',         array(&$this, 'custom_bulk_action'));
 				add_action('admin_notices',         array(&$this, 'custom_bulk_admin_notices'));
 				add_action('restrict_manage_posts', array(&$this,'savi_manage_country'));
-              add_action('restrict_manage_posts', array(&$this,'savi_views_by_filters'));
-              add_action( 'admin_action_inline-approval', array(&$this,'savi_admin_inline_approval') );
+				add_action('restrict_manage_posts', array(&$this,'savi_views_by_filters'));
+				add_action( 'admin_action_inline-approval', array(&$this,'savi_admin_inline_approval') );
             // Add the filter for searching selected country 
-            add_filter( 'parse_query', array(&$this,'savi_admin_posts_filter'));
-            add_action('admin_menu', array(&$this,'hd_add_box'));
-            add_action('admin_head',array(&$this,'hd_add_buttons'));
-            add_filter('bulk_actions-edit-view_5', array(&$this,'savi_views_CBA_remove') );
-            add_filter('bulk_actions-edit-view_6', array(&$this,'savi_views_CBA_remove') );
-            add_filter('bulk_actions-edit-view_7', array(&$this,'savi_views_CBA_remove') );     
+				add_filter( 'parse_query', array(&$this,'savi_admin_posts_filter'));
+				add_action('admin_menu', array(&$this,'hd_add_box'));
+				add_action('admin_head',array(&$this,'hd_add_buttons'));
+				add_filter('bulk_actions-edit-view_5', array(&$this,'savi_views_CBA_remove') );
+				add_filter('bulk_actions-edit-view_6', array(&$this,'savi_views_CBA_remove') );
+				add_filter('bulk_actions-edit-view_7', array(&$this,'savi_views_CBA_remove') );   
+				
+            add_action('admin_menu', array(&$this,'savi_remove_menus_for_editor'));  
             
         // }
 		}
-		
-		
+		public function savi_admin_inline_approval() {
+			// Handle request then generate response using echo or leaving PHP and using HTML
+			global $typenow,$wpdb;
+			$post_type = $typenow;
+			$wp_list_table = _get_list_table('WP_Posts_List_Table');  
+			$action ="approval";
+			$sendback = remove_query_arg( array($action, 'untrashed', 'deleted', 'ids')
+										 , wp_get_referer() );
+			if ( ! $sendback )
+				$sendback = admin_url( "edit.php?post_type=$post_type" );
+				
+			$pagenum = $wp_list_table->get_pagenum();
+			$sendback = add_query_arg( 'paged', $pagenum, $sendback );
+			if($post_type =="view_1"): 
+				$this->savi_view_1_update($_REQUEST['post']);
+			endif;
+			$sendback = add_query_arg( array('inline-approval' => 1,'ids' => $_REQUEST['post'] ), $sendback );
+			$sendback = remove_query_arg( array('action', 'action2', 'tags_input', 'post_author'
+									, 'comment_status', 'ping_status', '_status'
+									,  'post', 'bulk_edit', 'post_view'), $sendback );	
+			wp_redirect($sendback);
+			die;
+		}
+		public function hd_add_box() {
 
-function savi_admin_inline_approval() {
-    // Handle request then generate response using echo or leaving PHP and using HTML
-    global $typenow,$wpdb;
-	$post_type = $typenow;
-    $wp_list_table = _get_list_table('WP_Posts_List_Table');  
-    $action ="approval";
-    $sendback = remove_query_arg( array($action, 'untrashed', 'deleted', 'ids')
-					                             , wp_get_referer() );
-				   if ( ! $sendback )
-							$sendback = admin_url( "edit.php?post_type=$post_type" );
-					$pagenum = $wp_list_table->get_pagenum();
-				    $sendback = add_query_arg( 'paged', $pagenum, $sendback );
-				    if($post_type =="view_1"): 
-						     	  	   $this->savi_view_1_update($_REQUEST['post']);
-                        endif;
-			        $sendback = add_query_arg( array('inline-approval' => 1,'ids' => $_REQUEST['post'] ), $sendback );
-			        $sendback = remove_query_arg( array('action', 'action2', 'tags_input', 'post_author'
-				                            , 'comment_status', 'ping_status', '_status'
-				                            ,  'post', 'bulk_edit', 'post_view'), $sendback );	
-				    wp_redirect($sendback);
-					die;
-}
-	   function hd_add_box() {
- 			global $submenu;
-  			unset($submenu['edit.php?post_type=view_0'][10]);
-  			unset($submenu['edit.php?post_type=view_1'][10]);
-  			unset($submenu['edit.php?post_type=view_2'][10]);
-         unset($submenu['edit.php?post_type=view_3'][10]);
-         unset($submenu['edit.php?post_type=view_4'][10]); 
-         unset($submenu['edit.php?post_type=view_5'][10]); 
-         unset($submenu['edit.php?post_type=view_6'][10]); 
-         unset($submenu['edit.php?post_type=view_7'][10]); 
-         unset($submenu['edit.php?post_type=view_8'][10]);  
-      }	
-      function hd_add_buttons() {
-  			global $pagenow;
-  			$custom_post_type = array('view_0','view_1','view_2','view_3','view_4','view_5','view_6','view_7','view_8');
-  			if($pagenow == 'edit.php' && in_array($_GET['post_type'],$custom_post_type )) {
+			global $submenu;
+			unset($submenu['edit.php?post_type=view_0'][10]);
+			unset($submenu['edit.php?post_type=view_1'][10]);
+			unset($submenu['edit.php?post_type=view_2'][10]);
+			unset($submenu['edit.php?post_type=view_3'][10]);
+			unset($submenu['edit.php?post_type=view_4'][10]); 
+			unset($submenu['edit.php?post_type=view_5'][10]); 
+			unset($submenu['edit.php?post_type=view_6'][10]); 
+			unset($submenu['edit.php?post_type=view_7'][10]); 
+			unset($submenu['edit.php?post_type=view_8'][10]);  
+		}	
+		function hd_add_buttons() {
+			global $pagenow;
+			$custom_post_type = array('view_0','view_1','view_2','view_3','view_4','view_5','view_6','view_7','view_8');
+			if($pagenow == 'edit.php' && in_array($_GET['post_type'],$custom_post_type )) {
 				 echo '<style type="text/css">.add-new-h2{ display:none; }</style>';
 			}  
-     }
+		}
 	  function custom_bulk_admin_footer() {
 			global $post_type,$current_user;
                         $user_role = $current_user->roles[0];
@@ -139,19 +140,24 @@ function savi_admin_inline_approval() {
 			if(in_array($post_type,$custom_post_type ) && $_REQUEST['post_status']!="trash") {
 					$wp_list_table = _get_list_table('WP_Posts_List_Table');  
 					// depending on your resource type this could be WP_Users_List_Table, WP_Comments_List_Table, etc
+		         
 		           $action = $wp_list_table->current_action();
-			//	echo $_REQUEST['action'];
-				//die;
+	
 					$allowed_actions = array("confirmRegistration","Approval","SendEmailToVolunteer","RevertStatus","ResetVolunteer");
 					if(!in_array($action, $allowed_actions)) return;
 					// security check
+				
 					check_admin_referer('bulk-posts');
+
 					// make sure ids are submitted.  depending on the resource type, this may be 'media' or 'ids'
+
 					if(isset($_REQUEST['post'])) {
 							$post_ids = array_map('intval', $_REQUEST['post']);
 					}
 			   	if(empty($post_ids)) return;
 					// this is based on wp-admin/edit.php
+					
+				
 					$sendback = remove_query_arg( array($action, 'untrashed', 'deleted', 'ids')
 					                             , wp_get_referer() );
 				   if ( ! $sendback )
@@ -198,8 +204,9 @@ function savi_admin_inline_approval() {
 	  }
 	  function custom_bulk_admin_notices() {
 	  		global $post_type, $pagenow;
-	  	//
+	
          $custom_post_type = array('view_0','view_1','view_2','view_3','view_4');
+         
          if(isset($_REQUEST['confirmRegistration'])) {
              $newaction ='confirmRegistration';         
              $content ="Confirmed Registration";
@@ -207,7 +214,7 @@ function savi_admin_inline_approval() {
          if(isset($_REQUEST['Approval']) ) {
              $newaction ='Approval';         
              $content ="Approved";
-             //	die($pagenow.$post_type);
+             
          }
          if(isset($_REQUEST['SendEmailToVolunteer'])) {
              $newaction ='SendEmailToVolunteer';         
@@ -240,11 +247,11 @@ function savi_admin_inline_approval() {
 			endif;		
 		}
 		function create_custom_user($postID) {
-    	global $wpdb;
-   		$clientEmail= get_post_meta($postID, 'savi_views_contact-details_email', true);
+			global $wpdb;
+			$clientEmail= get_post_meta($postID, 'savi_views_contact-details_email', true);
    		
-   	  	$clientName = get_the_title($postID) ; 
-   	  	if (email_exists($clientEmail) == false ) :
+			$clientName = get_the_title($postID) ; 
+			if (email_exists($clientEmail) == false ) :
         			/*if ($clientName ) {
         			    if(username_exists( $clientName )){
                                         $clientName = $clientName.$postID;
@@ -256,93 +263,96 @@ function savi_admin_inline_approval() {
                                 }*/
                                 $parts=explode('@',$clientEmail);
                 	  	$pos_terminate = strpos($parts[1],".");
-                	  	$current_increment_id = $wpdb->get_var("SELECT `AUTO_INCREMENT` FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'aurovill_wordpress' AND TABLE_NAME = 'wp_users'" );
+                	  	$current_increment_id = $wpdb->get_var("SELECT `AUTO_INCREMENT` FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = '".DB_NAME."' AND TABLE_NAME = 'wp_users'" );
                 		//$clientName = $parts[0].substr($parts[1],0,$pos_terminate);
+                		
                 		$clientName = "savi".$current_increment_id;
           		$random_password = wp_generate_password( $length=12, $include_standard_special_chars=false );
 	       		$user_id = wp_create_user( $clientName, $random_password, $clientEmail );
 	       		$fname = get_post_meta($postID, 'savi_views_contact-details_first-name', true);
                 $lname = get_post_meta($postID, 'savi_views_contact-details_last-name', true);  
                 $Name =  $fname." ".$lname;
-	       		wp_update_user( array( 'ID' => $user_id, 'user_nicename' => $Name ,"display_name" => $Name) );
+	       		wp_update_user( array( 'ID' => $user_id, 'user_nicename' => $clientName ,"display_name" => $Name) );
 	       		$wp_user_object = new WP_User($user_id);
           		$wp_user_object->set_role('subscriber'); 
           		add_user_meta( $user_id, 'status', 'V1'); 
           		add_user_meta( $user_id, 'profile_post_id', $postID); 
-				//$wpdb->query("update wp_users set user_login = 'savi$user_id' where ID = ".$user_id);
-          		$htmlmessage = $this->saviGetTemplate($postID,$user_id,$random_password);
-          		//wp_new_user_notification($user_id, $random_password);
+				add_user_meta( $user_id, 'savi_role', 'volunteers');          	
+          		$htmlmessage = $this->saviGetTemplate($postID,$user_id,$random_password,'','view_0');
+          		
           		$site_url = get_bloginfo('wpurl');
           		add_filter( 'wp_mail_content_type', array($this,'set_html_content_type') );
-          		$subject = "New User Created: ".$site_url."";
-          		wp_mail($clientEmail, $subject, $htmlmessage);
-          		//$headers .= "MIME-Version: 1.0\r\n";
-			//$headers .= "Content-Type: text/html; charset=ISO-8859-1\r\n";
-          		//mail($clientEmail, $subject, $htmlmessage, $headers);
+          		$blog_title = get_bloginfo('name');
+          		$option_name = 'Inital_Enquiry';
+				$templatePage = (int) get_option($option_name);
+				$TemplateTitle = get_the_title($templatePage);
+          		$subject = $blog_title." - ".$TemplateTitle;
+				$mail_headers[]='From: Auroville Learning Network <'. get_option( 'admin_email' ).'>' . "\r\n";
+				//Check if this is a test site
+				$test_mentor_email = get_option("test_mentor_email");
+				if($test_mentor_email!="") wp_mail($test_mentor_email, $subject, $htmlmessage,$mail_headers);
+				else wp_mail($clientEmail, $subject, $htmlmessage,$mail_headers);
+          	
           		return array(
 		                	'user_id'	    => $user_id,
 			                'passwordNew'	=> $random_password );
                        
         endif;          	
       }
+    
       function set_html_content_type() {
 
-	return 'text/html';
+			return 'text/html';
       }
-   /*   function saviGetTemplate($postID) {
+   
+    function saviGetTemplate($postID ='',$user_id ='',$random_password ='',$oppID ='',$post_type ='', $requires_visa=false) {
  	     global $wpdb;
-    	 $fields = array("salutation", "firstname", "lastname", "address", "country", "userid", "password");
-    	 $values = array();
-    	 $meta = get_post_meta( $postID );
-   	  	 $country_id = $meta['savi_views_contact-details_nationality'][0];
-    	 $country_sql="SELECT meta_value FROM wp_frm_item_metas WHERE field_id = 738 AND item_id=$country_id";
-	 	 $country_results = $wpdb->get_results($country_sql,ARRAY_A);
-	 	 $country = $country_results[0]['meta_value'];		
-   	     $replace_array['salutation'] ="Mr / Mrs";
-    	 $replace_array['firstname'] =$meta['savi_views_contact-details_first-name'][0];
-    	 $replace_array['lastname'] =$meta['savi_views_contact-details_last-name'][0];
-    	 $replace_array['address'] =$meta['savi_views_contact-details_address'][0];
-    	 $replace_array['country'] =$country;
-    	 $replace_array['userid'] =$meta['user_id'][0];
-    	 $replace_array['password'] =$meta['plain_password'][0];
-     	 for ($arrIndex = 0; $arrIndex < sizeof($fields); $arrIndex++) {
-		 	 $fieldname = $fields[$arrIndex];
-		 	 $values[$arrIndex] = $replace_array[$fieldname];
-		 	 $fields[$arrIndex] = "[$fieldname]";
-    	 }
-    	 $templatePage = (int) get_option('Inital_Enquiry');
-    	 $printTemplate = get_post($templatePage);
-    	 $content = apply_filters('the_content',$printTemplate->post_content);
- 	 $printContent = str_replace($fields, $values, $content);  // Replace the fieldnames with the fieldvalues
-    	 return $printContent;
-
-      
-    }*/
-    function saviGetTemplate($postID,$user_id,$random_password) {
- 	     global $wpdb;
-    	 $fields = array("SAVI_name","SAVI_user_name", "SAVI_user_password");
-    	 $values = array();
-    	 $meta = get_post_meta( $postID );
     	 
-   //	print_r($meta);
-     $user_login=$wpdb->get_var("SELECT user_login FROM wp_users WHERE ID =".$user_id);
-     $user_display_name=$wpdb->get_var("SELECT display_name FROM wp_users WHERE ID =".$user_id);
-	//die;
-	     $replace_array['SAVI_name'] =$user_display_name;
-    	 $replace_array['SAVI_user_name'] =$user_login;
-    	 $replace_array['SAVI_user_password'] =$random_password;
-     	 for ($arrIndex = 0; $arrIndex < sizeof($fields); $arrIndex++) {
-		 	 $fieldname = $fields[$arrIndex];
-		 	 $values[$arrIndex] = $replace_array[$fieldname];
-		 	 $fields[$arrIndex] = "[$fieldname]";
-    	 }
-    	// print_r($values);die;
-    	 $templatePage = (int) get_option('Inital_Enquiry');
+    	 /*---------- new code for shortcodes----------*/
+    	  switch($post_type){
+			 
+			case 'view_0':
+			   $option_name = 'Inital_Enquiry';
+			   break;
+			case 'view_1':
+			   $option_name = 'Profile_Reviews';
+			   break;   
+			case 'view_2':
+			   $option_name = 'Opportunity_Selection';
+			   break;
+		   case 'view_2_profile_offer':
+			   $option_name = 'Volunteer_Profile_Offer';
+			   break;	      
+			   
+			case 'view_3':
+			   $option_name = 'Opportunity_Confirmation';
+			   break;   
+			case 'view_6':
+			   $option_name = 'Pre_Visa';
+			   break; 
+			case 'view_6_instruction_for_auroville_visa_application':
+			   $option_name = 'Instruction_for_Auroville_VISA_Application';
+			   break;      
+			case 'view_7':
+			   $option_name = 'Induction_Instructions';
+			   break;   
+			 
+		 }
+    	 $templatePage = (int) get_option($option_name);
     	 $printTemplate = get_post($templatePage);
-    	 $content = apply_filters('the_content',$printTemplate->post_content);
- 	 $printContent = str_replace($fields, $values, $content);  // Replace the fieldnames with the fieldvalues
-    	 return $printContent;
-
+    	 $content = $printTemplate->post_content;
+    	 $savi_shortcodes = array();
+		 foreach($GLOBALS['shortcode_tags'] as $keys => $values){
+			if( substr( $keys, 0, 4 ) === "SAVI" ) $savi_shortcodes[] = $keys;
+		 }
+	 	$default_atts = 'profile_id="'.$postID.'" user_id="'.$user_id.'" user_pwd="'.$random_password.'" need_visa=="'.$requires_visa.'" post_type=="'.$post_type.'" opportunity_id="'.$oppID.'"';
+		foreach($savi_shortcodes as $saviCodes){
+			if (has_shortcode($content, $saviCodes)) 
+				$content = str_replace('['.$saviCodes,'['.$saviCodes.' '.$default_atts,$content);
+		}
+		$printContent = apply_filters('the_content',$content);
+        return $printContent;
+    	 
       
     }
       function savi_new_user_notification($user_id,$password) {
@@ -354,8 +364,11 @@ function savi_admin_inline_approval() {
       	$message = "Hello " .$user_info->display_name .
                    "\nWe have Created New user name and password.
                     !\n\nThank you for visiting\n ".$site_url."\n\nUser Name : $user_info->display_name.password:$password w\n\n";
-      	wp_mail( $to, $subject, $message);
-      	 //mail($to,$subject,$message);
+      	$mail_headers[]='From: Auroville Learning Network <'. get_option( 'admin_email' ).'>' . "\r\n";
+		 //Check if this is a test site
+		$test_mentor_email = get_option("test_mentor_email");
+		if($test_mentor_email!="") wp_mail($test_mentor_email, $subject, $message, $mail_headers);
+		else wp_mail($to, $subject, $message, $mail_headers);
    
    	}
    	function savi_email_to_volunteer($user_id,$interest_shown) {
@@ -367,21 +380,26 @@ function savi_admin_inline_approval() {
       	$message = "Hello " .$user_info->display_name .
                    "\nWe have selected opportunities depending upon your skills please select best of three opportuniies. 
                     !\n\nThank you for visiting\n ".$site_url."\n\nThe Opportunites are as below\n\n".$interest_shown;
-      	wp_mail( $to, $subject, $message);
-      	// mail($to,$subject,$message);
+      	$mail_headers[]='From: Auroville Learning Network <'. get_option( 'admin_email' ).'>' . "\r\n";
+		//Check if this is a test site
+		$test_mentor_email = get_option("test_mentor_email");
+		if($test_mentor_email!="") wp_mail($test_mentor_email, $subject, $message,$mail_headers);
+		else wp_mail($to, $subject, $message,$mail_headers);
    
    	}
    	function savi_approval_email($user_id) {
-   
       	$site_url = get_bloginfo('wpurl');
-        	$user_info = get_userdata( $user_id );
-        	$to = $user_info->user_email;
-        	$subject = "Profile Approved: ".$site_url."";
-        	$message = "Hello " .$user_info->display_name .
-                   "\nYour profile has been Approved,So you can start accessing the opportunities page
-                    !\n\nThank you for visiting\n ".$site_url."";
-        	wp_mail( $to, $subject, $message);
-              // mail($to,$subject,$message);
+		$user_info = get_userdata( $user_id );
+		$to = $user_info->user_email;
+		$subject = "Profile Approved: ".$site_url."";
+		$message = "Hello " .$user_info->display_name .
+			   "\nYour profile has been Approved,So you can start accessing the opportunities page
+				!\n\nThank you for visiting\n ".$site_url."";
+		$mail_headers[]='From: Auroville Learning Network <'. get_option( 'admin_email' ).'>' . "\r\n";
+		  //Check if this is a test site
+		$test_mentor_email = get_option("test_mentor_email");
+		if($test_mentor_email!="") wp_mail($test_mentor_email, $subject, $message,$mail_headers);
+		else wp_mail($to, $subject, $message, $mail_headers);
      }
      function savi_manage_country() {
      		$custom_post_type = array('view_0','view_1','view_3','view_4','view_5','view_6','view_7','view_8');
@@ -409,9 +427,9 @@ function savi_admin_inline_approval() {
         wp_dropdown_categories(array(
             'show_option_all' =>  __("Show All {$work_area_taxonomy->label}"),
             'taxonomy'        =>  $taxonomy,
-            'name'            =>  'savi_opp_cat_work_area',
+            'name'            =>  'work_area_filter',
             'orderby'         =>  'name',
-            'selected'        =>  $wp_query->query['term'],
+            'selected'        =>  $_REQUEST['work_area_filter'],
             'hierarchical'    =>  true,
             'depth'           =>  3,
             'show_count'      =>  false, // Show # listings in parens
@@ -439,13 +457,19 @@ function savi_admin_inline_approval() {
 }
   function savi_dropdown_custom_field( $args = '' ) {
 
-      	global $wpdb;
+      	global $wpdb,$post_type;
       	$name = 'ADMIN_FILTER_FIELD_VALUE';
 	   	$id = "ADMIN_FILTER_FIELD_VALUE";
       	$class = $args['class'];
       	$show_option_all = $args['show_option_all'];
       	$custom_filed  =  $args['custom_filed'];  
-      	$sql = 'SELECT DISTINCT meta_value FROM wp_postmeta where meta_key="'.$custom_filed.'" ORDER BY 1';
+      	$sql = 'SELECT	DISTINCT meta_value 
+				FROM	wp_postmeta wpm,
+						wp_posts wp
+				WHERE 	meta_key="'.$custom_filed.'"
+				AND 	wp.ID = wpm.post_id
+				AND		wp.post_type ="'.$post_type.'"
+				ORDER BY 1';
       	$fields = $wpdb->get_results($sql, ARRAY_A);
       	$output = '';
       	if ( !empty($fields) || count($fields) > 1 ) {
@@ -461,27 +485,51 @@ function savi_admin_inline_approval() {
 						 $country_results = $wpdb->get_results($country_sql,ARRAY_A);
 						 $field_value = $country_results[0]['meta_value'];		
 					endif;
+					$selected = isset($_REQUEST['ADMIN_FILTER_FIELD_VALUE'])?$_REQUEST['ADMIN_FILTER_FIELD_VALUE']:"";
 					$_selected = selected( $field_value, $selected, false );
 					if ( $_selected )
 						$found_selected = true;
-						$output .= "\t<option value='$field_value_id'$_selected>" . $field_value . "</option>\n";
+						$output .= "\t<option value='$field_value_id' $_selected>" . $field_value . "</option>\n";
 		     }
         	  $output .= "</select><input type='hidden' name='ADMIN_FILTER_FIELD_NAME' value='".$custom_filed."'/>";
         	  echo $output;
         }
       }
   		function savi_admin_posts_filter( $query ) {
-  			global $pagenow;$qv = &$query->query_vars;
+  			global $pagenow,$wpdb;$qv = &$query->query_vars;
      		        if ( is_admin() && $pagenow=='edit.php' && isset($_GET['ADMIN_FILTER_FIELD_NAME']) &&
      	                                            $_GET['ADMIN_FILTER_FIELD_NAME'] != '') {
       			          $query->query_vars['meta_key'] = $_GET['ADMIN_FILTER_FIELD_NAME'];
       			          if (isset($_GET['ADMIN_FILTER_FIELD_VALUE']) && $_GET['ADMIN_FILTER_FIELD_VALUE'] != '')
         					$query->query_vars['meta_value'] = $_GET['ADMIN_FILTER_FIELD_VALUE'];
           	       }
-          	       if ( is_admin() && $pagenow=='edit.php' && isset($qv['taxonomy']) && $qv['taxonomy']=='savi_opp_cat_work_area' &&
-                                       isset($qv['term']) && is_numeric($qv['term']) && isset($_REQUEST['savi_opp_cat_work_area']) && $_REQUEST['savi_opp_cat_work_area']!=0 ) {
-                                       $term = get_term_by('id',$qv['term'],'savi_opp_cat_work_area');
-                                       $qv['term'] = $term->slug;
+          	       if ( is_admin() && $pagenow=='edit.php' &&
+          	          isset($_REQUEST['work_area_filter']) && $_REQUEST['work_area_filter']!=0 ) {
+						    $parent_workarea = $_REQUEST['work_area_filter'];
+							$results=$wpdb->get_results("SELECT term_id from wp_term_taxonomy 
+							where parent = $parent_workarea");
+							$childIndex = 0;
+							foreach ($results as $result)
+							{
+								$childTerm = $result->term_id;
+								if ($childIndex > 0) 
+									$search_children = $search_children.' or ';
+							   
+								$search_children = $search_children.' meta_value like'. '"%' .$childTerm.'%"';
+								$childIndex++;
+							}
+							$post_ids = $wpdb->get_results("SELECT post_id from wp_frm_items where id in 
+												(select item_id from wp_frm_item_metas where $search_children)" );
+					        $new_postIDs = array();
+					        $i = 0;
+							foreach($post_ids as $postID) {
+								
+								$new_postIDs[$i++] = $postID->post_id;
+								
+						    }					 
+                             
+                                     $qv['post__in'] = $new_postIDs;
+                                    
                   }
                   if( is_admin() && $pagenow=='edit.php' && isset( $_REQUEST['duration_filter'] ) && $_REQUEST['duration_filter'] !=0) :
                       
@@ -489,6 +537,7 @@ function savi_admin_inline_approval() {
                       switch($duration_filter){
                           
                           case '2-4': // 2-4 months
+                          
                               $meta_value = array(2,3,4);
                               $meta_compare = 'IN';
                               
@@ -518,18 +567,47 @@ function savi_admin_inline_approval() {
                       
                       
                   endif;  
-                   
+                   //$qv['post__in'] = array(2853);
   		}
 		function savi_view_0_update($post_id) {
 			global $wpdb;
   			$args= $this->create_custom_user($post_id);	
-  			if(!empty($args['user_id']) && $args['user_id'] > 0) {
-      			$wpdb->query("update wp_posts set post_type='view_1'
-                           	            ,post_author='".$args['user_id']."',post_status='publish'  where ID =".$post_id);
-            	           update_post_meta($post_id,'user_id',$args['user_id']);
+  			$userid = $args['user_id'];
+  			
+  			if(!empty($userid) && $userid > 0) {
+      			$wpdb->query("update wp_posts set post_type='view_1', 
+                           	             post_author= '$userid', post_status='publish'  where ID = $post_id");
+            	           update_post_meta($post_id,'user_id',$userid);
             	           update_post_meta($post_id,'plain_password',$args['passwordNew']);
-            	          $wpdb->query("update wp_frm_items set form_id = 19, user_id =".$args['user_id']." where post_id = ".$post_id);
-      	                }   
+            	           update_post_meta($post_id,'view_1_created',current_time( 'mysql' ));
+            	        
+			   // We are updating the table wp_frm_items 
+			   // user_id = $userid --> To assign the user to the form entry. The form uses this to show the profile information
+			   // post_id = 0 --> This will ensure that the draft can be saved 
+			   // is_draft = 1 --> This will ensure that the draft can be saved
+			   // form_id = 19 --> This will move the form from view_0 to view_1
+            	           $wpdb->query("UPDATE wp_frm_items set user_id = $userid, post_id = 0, is_draft = 1, form_id = 19 where post_id = $post_id");
+			   $resultset = $wpdb->get_row("SELECT id FROM wp_frm_items WHERE user_id = $userid");
+			   
+			   // This is used to disable the editing / approval of the profiles that are not yet submitted
+			   update_post_meta($post_id, 'profile_incomplete', 'yes');
+			   
+			   if ($resultset != null) {
+				// The check is redundant. But if the resultset is null somehow, then you can assume that you are in deep shit
+				$item_id = $resultset->id;
+				
+				// Transfer the information from the post meta into the item metas table so that the save as draft works correctly
+				// Vrata had suggested another method of duplicating the form data. But considering that both touch the nose round the admin_head, the alternate method is just going around the head in a clockwise manner. 
+				$wpdb->query("INSERT INTO wp_frm_item_metas (meta_value, field_id, item_id) 
+						(SELECT DISTINCT meta_value, wp_frm_fields.id, $item_id
+						    FROM wp_frm_fields, wp_postmeta
+						    WHERE field_options LIKE CONCAT(  '%', meta_key,  '%' ) 
+						    AND post_id = $post_id
+						    AND form_id = 19)");
+            	           }
+           	           
+      	      }
+      	         
 			/*else { 
 		      	    $wpdb->query("update wp_posts set post_type='view_1',post_status='publish' where ID =".$post_id);
       	                }   */
@@ -540,41 +618,279 @@ function savi_admin_inline_approval() {
                                                                              where ID =".$post_id);*/
                           $wpdb->query("update wp_posts set post_type='view_2'
                                                                              where ID =".$post_id);
+                          update_post_meta($post_id,'view_2_created',current_time( 'mysql' ));                                                   
          $user_id= get_post_meta($post_id,'user_id',true);
+         $user_info = get_userdata( $user_id );
+      	 $clientEmail = $user_info->user_email;
          update_user_meta( $user_id,'status', 'V2', 'V1' );
-         $this->savi_approval_email($user_id);  	   
+         $site_url = get_bloginfo('wpurl');
+         $htmlmessage = $this->saviGetTemplate($post_id,$user_id,'','','view_1');
+         add_filter( 'wp_mail_content_type', array($this,'set_html_content_type') );
+         $blog_title = get_bloginfo('name');
+		 $option_name = 'Profile_Reviews';
+		 $templatePage = (int) get_option($option_name);
+		 $TemplateTitle = get_the_title($templatePage);
+		 $subject = $blog_title." - ".$TemplateTitle;
+		 $mail_headers[]='From: Auroville Learning Network <'. get_option( 'admin_email' ).'>' . "\r\n";
+		 //Check if this is a test site
+		$test_mentor_email = get_option("test_mentor_email");
+		if($test_mentor_email!="") wp_mail($test_mentor_email, $subject, $htmlmessage,$mail_headers); //send all messages to this mail
+		else wp_mail($clientEmail, $subject, $htmlmessage,$mail_headers);
+
   	   }
+  
       function savi_view_2_update($post_id) {
          global $wpdb;
 			$expressOpportunitiesMeta = get_post_meta( $post_id, 'express_opportunities', false );
 			$allexpressOpportunities = $expressOpportunitiesMeta[0];
 			$expressOpportunitiesValue = "";
-         if (sizeof($allexpressOpportunities) > 0 && is_array($allexpressOpportunities)) {
+			$user_id= get_post_meta($post_id,'user_id',true);
+            if (sizeof($allexpressOpportunities) > 0 && is_array($allexpressOpportunities)) {
             	foreach($allexpressOpportunities as $key=>$expressOpportunity) {
-               	$expressOpportunitiesID = $expressOpportunity['express_opportunity'];
+               	  $expressOpportunitiesID = $expressOpportunity['express_opportunity'];
                   $expressOpportunitiesValue.= get_the_title($expressOpportunitiesID)."\n";
-               }
+                  
+                   /* ======================================================
+                    when volunteer profile is moved from view_2 to view_3, 
+                     Mail sent to opportunity contact person
+                  ========================================================*/  
+                  
+					 $user_info = get_userdata( $user_id );
+					 $clientEmail = $user_info->user_email;
+					 $site_url = get_bloginfo('wpurl');
+					 $mentorEmail = get_post_meta($expressOpportunitiesID,'contactEmail',true);
+					
+					 $htmlmessage = $this->saviGetTemplate($post_id,$user_id,'',$expressOpportunitiesID,'view_2_profile_offer');
+					 add_filter( 'wp_mail_content_type', array($this,'set_html_content_type') );
+					 $blog_title = get_bloginfo('name');
+					 $option_name = 'Volunteer_Profile_Offer';
+					 $templatePage = (int) get_option($option_name);
+					 $TemplateTitle = get_the_title($templatePage);
+					 $subject = $blog_title." - ".$TemplateTitle;
+					 $mail_headers[]='From: Auroville Learning Network <'. get_option( 'admin_email' ).'>' . "\r\n";
+					 //Check if this is a test site
+					 $test_mentor_email = get_option("test_mentor_email");
+					 if($test_mentor_email!=""){
+						wp_mail($test_mentor_email, $subject, $htmlmessage,$mail_headers);
+					  }else{
+						wp_mail($mentorEmail, $subject, $htmlmessage,$mail_headers); 
+						
+					 }
+                  /* ======================================================
+                    when volunteer profile is moved from view_2 to view_3, 
+                    for each opportunities in expressed_opportunity, store 
+                    volunteer user ID in opportunity meta-field
+                    array expressed_volunteer.
+                  ========================================================*/  
+                  
+					$expressVolunteerMeta = get_post_meta($expressOpportunitiesID,'expressed_volunteer',true);
+					$allexpressVolunteer = array();
+					$newexpressVolunteers = array();
+					$allexpressVolunteer = $expressVolunteerMeta;
+					$arraySize = sizeof($allexpressVolunteer);   
+					$isVolunteerUserID = false; 
+					$volunteer_user_id  = $user_id;
+                   if ($arraySize > 0 && is_array($allexpressVolunteer)) {
+		               /* ======================================================
+		           			checks if express volunteer having volunteer user ids
+		           			 add the selected opportunity end of the array 
+		           	  ========================================================*/ 		
+            			$express_volunteerID = $volunteer_user_id;
+            		   	foreach($allexpressVolunteer as $searchExpressVolunteer){
+							if($searchExpressVolunteer == $express_volunteerID){
+							  	$isVolunteerUserID = true;
+							}
+						}
+						if(!$isVolunteerUserID){
+							$allexpressVolunteer[] = $express_volunteerID;
+					    }	
+         			}
+      	        else {
+                    /* ======================================================
+                      else express volunteer having no volunteer user ids add 
+                      the selected opportunity begining of the array 
+                    ========================================================*/ 	 
+      	      		    $express_volunteerID = $volunteer_user_id;
+					//	$allexpressVolunteerInfo = array (  "express_volunteerID" => $express_volunteerID, );
+               		    $allexpressVolunteer[0] = $express_volunteerID;
+				      	
+      			}
+         			$newexpressVolunteers = $allexpressVolunteer;     
+         			update_post_meta($expressOpportunitiesID,'expressed_volunteer',$newexpressVolunteers);     
+         		}
                $wpdb->query("update wp_posts set post_type='view_3' where ID =".$post_id);
+               update_post_meta($post_id,'view_3_created',current_time( 'mysql' ));
+               
+			  /* ========================================================
+				  update ordered_opportunity and ordered_opportunity_date
+				  post meta filed to the user profile
+				========================================================*/ 	 
+               update_post_meta($post_id,'ordered_opportunity','');
+               update_post_meta($post_id,'ordered_opportunity_date','');
+               
                update_post_meta($post_id,'reminder_flag','0');
-               $user_id= get_post_meta($post_id,'user_id',true);
-               $this->savi_email_to_volunteer($user_id,$expressOpportunitiesValue);	                                    
+              /* ======================================================
+                     Send the email for selecting top 3 in order of
+                     preference using the form link
+                 ========================================================*/ 	 
+               
+                 $user_info = get_userdata( $user_id );
+				 $clientEmail = $user_info->user_email;
+				 $site_url = get_bloginfo('wpurl');
+				 $htmlmessage = $this->saviGetTemplate($post_id,$user_id,'','','view_2');
+				 add_filter( 'wp_mail_content_type', array($this,'set_html_content_type') );
+				 $blog_title = get_bloginfo('name');
+				 $option_name = 'Opportunity_Selection';
+				 $templatePage = (int) get_option($option_name);
+				 $TemplateTitle = get_the_title($templatePage);
+				 $subject = $blog_title." - ".$TemplateTitle;
+				 $mail_headers[]='From: Auroville Learning Network <'. get_option( 'admin_email' ).'>' . "\r\n";
+				 //Check if this is a test site
+				$test_mentor_email = get_option("test_mentor_email");
+				if($test_mentor_email!="") wp_mail($test_mentor_email, $subject, $htmlmessage,$mail_headers);
+				else wp_mail($clientEmail, $subject, $htmlmessage,$mail_headers);
         }      
       }
+  
       function savi_view_3_update($post_id) {
-      	global $wpdb;
-			$wpdb->query("update wp_posts set post_type='view_2' where ID =".$post_id);
+            global $wpdb;
+            
+             /* ======================================================
+               remove the $profile_user_id in the ordered_new_volunteer
+               because revert the status view_3 to view_2 
+             ========================================================*/ 	 
+            $expressOpportunitiesIDs = array();
+            $ordered_new_volunteerMeta = array();
+            $removed_ordered_new_volunteerIDs = array();
+            $expressedVolunteerMeta = array();
+            $removed_expressedVolunteerIDs = array();
+            $profile_user_id =  get_post_meta($post_id,'user_id',true);
+            $expressOpportunitiesMeta = get_post_meta( $post_id, 'express_opportunities', false );
+            $allexpressOpportunities = $expressOpportunitiesMeta[0];
+            if (sizeof($allexpressOpportunities) > 0 && is_array($allexpressOpportunities)) {
+            	foreach($allexpressOpportunities as $key=>$expressOpportunity) {
+               	  $expressOpportunitiesIDs[] = $expressOpportunity['express_opportunity'];
+                 }
+            } 
+            foreach($expressOpportunitiesIDs as $expressOpportunitiesID){
+				$ordered_new_volunteerMeta = get_post_meta( $expressOpportunitiesID, 'ordered_new_volunteer',true);
+        		 foreach($ordered_new_volunteerMeta as $vol_user_id){
+					if($vol_user_id != $profile_user_id ):
+						$removed_ordered_new_volunteerIDs[] = $vol_user_id;				
+					endif; 
+				 }
+                 update_post_meta($expressOpportunitiesID,'ordered_new_volunteer',$removed_ordered_new_volunteerIDs);
+                 $expressedVolunteerMeta = get_post_meta( $expressOpportunitiesID, 'expressed_volunteer', true );
+                  foreach($expressedVolunteerMeta as $expressedVolunteer_user_id){
+					if($expressedVolunteer_user_id != $profile_user_id ):
+						$removed_expressedVolunteerIDs[] = $expressedVolunteer_user_id;				
+					endif; 
+				 } 
+				 update_post_meta($expressOpportunitiesID,'expressed_volunteer',$removed_expressedVolunteerIDs);   
+				unset($removed_ordered_new_volunteerIDs);
+				unset($removed_expressedVolunteerIDs);
+	        }   
+	              
+            $wpdb->query("update wp_posts set post_type='view_2' where ID =".$post_id);
 			$wpdb->query("delete from wp_postmeta where post_id =".$post_id." and meta_key='express_opportunities'");
-			$wpdb->query("delete from wp_postmeta where post_id =".$post_id." and meta_key='reminder_flag'");			
+			$wpdb->query("delete from wp_postmeta where post_id =".$post_id." and meta_key='ordered_opportunity'");
+			$wpdb->query("delete from wp_postmeta where post_id =".$post_id." and meta_key='ordered_opportunity_date'");
+			$wpdb->query("delete from wp_postmeta where post_id =".$post_id." and meta_key='reminder_flag'");	
+			
+				
 		}
 	   function savi_view_4_update($post_id) {
-	   	global $wpdb;
+	   	    global $wpdb;
+	   	    
+             /* ======================================================
+               remove the $profile_user_id in the ordered_new_volunteer
+               because revert the volunteer (Dormant) view_4 to view_1 
+             ========================================================*/
+	   	    $expressOpportunitiesIDs = array();
+            $ordered_new_volunteerMeta = array();
+            $removed_ordered_new_volunteerIDs = array();
+            $expressedVolunteerMeta = array();
+            $removed_expressedVolunteerIDs = array();
+            $profile_user_id =  get_post_meta($post_id,'user_id',true);
+            $expressOpportunitiesMeta = get_post_meta( $post_id, 'express_opportunities', false );
+            $allexpressOpportunities = $expressOpportunitiesMeta[0];
+            if (sizeof($allexpressOpportunities) > 0 && is_array($allexpressOpportunities)) {
+            	foreach($allexpressOpportunities as $key=>$expressOpportunity) {
+               	  $expressOpportunitiesIDs[] = $expressOpportunity['express_opportunity'];
+                 }
+            } 
+            foreach($expressOpportunitiesIDs as $expressOpportunitiesID){
+				$ordered_new_volunteerMeta = get_post_meta( $expressOpportunitiesID, 'ordered_new_volunteer',true);
+        		 foreach($ordered_new_volunteerMeta as $vol_user_id){
+					if($vol_user_id != $profile_user_id ):
+						$removed_ordered_new_volunteerIDs[] = $vol_user_id;				
+					endif; 
+				 }
+                 update_post_meta($expressOpportunitiesID,'ordered_new_volunteer',$removed_ordered_new_volunteerIDs);
+                 $expressedVolunteerMeta = get_post_meta( $expressOpportunitiesID, 'expressed_volunteer', true );
+                  foreach($expressedVolunteerMeta as $expressedVolunteer_user_id){
+					if($expressedVolunteer_user_id != $profile_user_id ):
+						$removed_expressedVolunteerIDs[] = $expressedVolunteer_user_id;				
+					endif; 
+				 } 
+				 update_post_meta($expressOpportunitiesID,'expressed_volunteer',$removed_expressedVolunteerIDs);  
+				 unset($removed_ordered_new_volunteerIDs);
+				 unset($removed_expressedVolunteerIDs); 
+	        }   
+	        
 			$wpdb->query("update wp_posts set post_type='view_1' where ID =".$post_id);
-			$wpdb->query("delete from wp_postmeta where post_id =".$post_id." and meta_key='express_opportunities'");			
+			$wpdb->query("delete from wp_postmeta where post_id =".$post_id." and meta_key='express_opportunities'");
+			$wpdb->query("delete from wp_postmeta where post_id =".$post_id." and meta_key='ordered_opportunity'");
+			$wpdb->query("delete from wp_postmeta where post_id =".$post_id." and meta_key='ordered_opportunity_date'");
+			$wpdb->query("delete from wp_postmeta where post_id =".$post_id." and meta_key='reminder_flag'");	
+						
 		} 
+		
 		function savi_views_CBA_remove( $actions ){
         unset( $actions[ 'edit' ] );
         unset( $actions[ 'trash' ] );
         return $actions;
-      }      	      	 	 
+      }   
+      function savi_remove_menus_for_editor()
+      {
+      	
+    		global $menu;
+         
+    		global $current_user;
+    		$user_role = $current_user->roles[0];
+         if(in_array($user_role,array('editor'))){
+         	$is_access_allowed ='yes';
+          }else{
+            $is_access_allowed ='no';  
+          }
+			if($is_access_allowed == "yes" )
+    		{
+        		$restricted = array(__('Pages'),
+                            __('Media'),
+                            __('Links'),
+                            __('Comments'),
+                            __('Appearance'),
+                            __('Plugins'),
+                            __('Users'),
+                            __('Tools'),
+                            __('Settings'),
+                            __('Posts'),
+                            __('Profile'),
+                            __('Programs'),
+                            __('Forms'),
+
+
+        						);
+        		end ($menu);
+        	
+        		while (prev($menu)){
+            		$value = explode(' ',$menu[key($menu)][0]);
+            		if(in_array($value[0] != NULL?$value[0]:"" , $restricted)){unset($menu[key($menu)]);}
+            	}
+        	
+        		remove_menu_page( 'edit.php?post_type=project' );
+            
+    	}
+  	}         	      	 	 
 }
 ?>

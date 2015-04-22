@@ -140,7 +140,13 @@ class AV_units extends Listing
                         // Post types, accept custom post types as well - DEFAULT is array('post'). Optional.
                         'pages' => array('av_unit' ),
                 'fields' => array(
+                      // Name Landphone
+                    array(
+                        'name' => __( 'Unit Abbrevation', 'rwmb' ),
+                        'id'   => "unit_short_name",
+                        'type' => 'text',
 
+                    ),
                      // Name Landphone
                     array(
                         'name' => __( 'Landphone', 'rwmb' ),
@@ -332,6 +338,7 @@ class AV_units extends Listing
         $unit_url = sanitize_text_field( $_POST['unit_url'] );
         $contact_email = sanitize_text_field( $_POST['contact_email'] );
         $contact_number = sanitize_text_field( $_POST['contact_number'] );
+        $unit_short_name = $_POST['unit_short_name'];
         $landphone = $_POST['landphone'];
         $link_with_units = $_POST['link_with_units'];
         $affiliation_note = $_POST['affiliation_note'];
@@ -343,6 +350,7 @@ class AV_units extends Listing
         update_post_meta( $post_id, 'unit_url', $unit_url);
         update_post_meta( $post_id, 'contact_email', $contact_email);
         update_post_meta( $post_id, 'contact_number', $contact_number);
+        update_post_meta( $post_id, 'unit_short_name', $unit_short_name);
         update_post_meta( $post_id, 'landphone', $landphone);
         update_post_meta( $post_id, 'link_with_units', $link_with_units);
         update_post_meta( $post_id, 'affiliation_note', $affiliation_note);
