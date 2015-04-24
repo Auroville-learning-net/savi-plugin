@@ -88,7 +88,7 @@ class Confirm_Opportunity extends Default_Profile {
         		          
         		        $ordered_new_volunteer = get_post_meta($orderOpportunitiesID,'ordered_new_volunteer',true);
         		        //echo "<pre>",print_r($ordered_new_volunteer),"</pre>";
-        		        if(count($ordered_new_volunteer) > 0 ){
+        		        if(is_array($ordered_new_volunteer) > 0 ){
         		       		foreach($ordered_new_volunteer as $key => $vol_user_id){
 							
 							if($vol_user_id == $order_user_id ):
